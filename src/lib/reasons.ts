@@ -149,3 +149,17 @@ export const REASON_KIND: Record<string, 'defect' | 'unverifiable' | 'infrastruc
   // 같은 6.2에서 Error로 분류한다. 증거가 없으면 대상 시스템 결함이 아니다.
   chaos_evidence_missing: 'infrastructure',
 }
+
+/** 판정 경고. Pass를 뒤집지 않고 리포트에만 남는 표시다.
+ *
+ * `reason_category`가 아니라 `metrics.policy_warnings`로 온다. 백엔드 최종 상태가
+ * PASSED / FAILED / ERROR 셋뿐이라 경고를 별도 판정으로 만들 자리가 없기 때문이다.
+ * docs/judge-policy.md 6.3. */
+export const POLICY_WARNING_LABEL: Record<string, string> = {
+  chaos_single_replica_topology:
+    '대상이 1대뿐이에요. 그 1대를 멈추면 잠시 끊기는 게 정상이라 결함으로 보지 않았어요.',
+  chaos_error_budget_significant_burn:
+    '한 번의 장애로 이번 달 에러 버짓의 20% 이상을 썼어요.',
+  chaos_latency_degraded:
+    '장애 구간 응답 시간이 평소의 10배를 넘었어요. 복구는 했어요.',
+}
