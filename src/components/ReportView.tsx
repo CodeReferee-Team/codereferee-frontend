@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import type { AiReports } from '@/lib/api'
+import { patchCheck, type AiReports } from '@/lib/api'
 
 function EvidenceList({ items }: { items?: string[] }) {
   if (!items?.length) return null
@@ -37,8 +37,15 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 const RISK_LABEL = { low: '낮음', medium: '보통', high: '높음' } as const
 
 export function ReportView({ reports }: { reports: AiReports }) {
-  const { judge_report, critic_feedback, refiner_report, metrics, events } =
-    reports
+  const {
+    judge_report,
+    critic_feedback,
+    refiner_report,
+    refine_rounds,
+    metrics,
+    events,
+  } = reports
+  const patch = patchCheck(reports)
 
   return (
     <div className="space-y-4">
@@ -112,6 +119,60 @@ export function ReportView({ reports }: { reports: AiReports }) {
                 {RISK_LABEL[refiner_report.risk] ?? refiner_report.risk}
               </Badge>
             </div>
+            {patch && (
+              <dl>
+                {/* 패치가 샌드박스까지 가지 못한 경우 그 이유가 여기만 남는다. */}
+                <Field label="패치 검사">
+                  {patch.accepted
+                    ? '적용 가능'
+                    : `반려 (${patch.reason_code ?? '사유 없음'})`}
+                  {patch.reason && (
+                    <span className="text-muted-foreground"> · {patch.reason}</span>
+                  )}
+                </Field>
+              </dl>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {refine_rounds && refine_rounds.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>재검증 라운드</CardTitle>
+            <CardDescription>
+              Refiner 패치를 샌드박스에 적용해 다시 돌린 기록. 제출된 커밋의 판정은
+              바뀌지 않는다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {refine_rounds.map((r) => (
+                <li key={r.round} className="rounded-lg border p-3">
+                  <p className="text-sm font-medium">{r.round}라운드</p>
+                  <dl className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <Field label="패치 크기">
+                      <span className="font-mono">{r.patch_bytes}B</span>
+                    </Field>
+                    {/* null은 그 라운드가 판정까지 가지 못한 것이다. Pass도 Fail도 아니다. */}
+                    <Field label="판정">
+                      <span className="font-mono">
+                        {r.before_judge_status ?? '—'} →{' '}
+                        {r.after_judge_status ?? '—'}
+                      </span>
+                    </Field>
+                    <Field label="종료 코드">
+                      <span className="font-mono">
+                        {r.sandbox_exit_code ?? '—'}
+                      </span>
+                    </Field>
+                    <Field label="실패 단계">
+                      <span className="font-mono">{r.failed_step ?? '—'}</span>
+                    </Field>
+                  </dl>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       )}

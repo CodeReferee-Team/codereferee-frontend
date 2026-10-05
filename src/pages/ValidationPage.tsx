@@ -8,12 +8,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ApiError, chaosObserved, isTerminal } from '@/lib/api'
 import { useValidation } from '@/lib/queries'
+import { REASON_LABEL } from '@/lib/reasons'
 import { CHAOS_SKIPPED_HINT, STEP_HINT } from '@/lib/steps'
 
 export default function ValidationPage() {
   const { requestId = '' } = useParams()
   const { data, error, isPending } = useValidation(requestId)
   const chaosRan = chaosObserved(data?.aiReports)
+  // 사유 코드가 있으면 단계 문구보다 정확하다. 모르는 코드는 단계 문구로 돌아간다.
+  const reasonCategory = data?.aiReports?.judge_report?.reason_category
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
@@ -58,7 +61,8 @@ export default function ValidationPage() {
               />
 
               <p className="text-sm text-muted-foreground">
-                {STEP_HINT[data.currentAgent]}
+                {(reasonCategory && REASON_LABEL[reasonCategory]) ||
+                  STEP_HINT[data.currentAgent]}
               </p>
               {isTerminal(data.currentAgent) && !chaosRan && (
                 <p className="text-sm text-muted-foreground">
