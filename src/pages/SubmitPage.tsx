@@ -11,6 +11,11 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  CHAOS_MODES,
+  DEPLOYING_CHAOS_MODES,
+  type ChaosMode,
+} from '@/lib/api'
 import { useSubmitValidation } from '@/lib/queries'
 
 export default function SubmitPage() {
@@ -19,6 +24,14 @@ export default function SubmitPage() {
   const [url, setUrl] = useState('')
   const [branch, setBranch] = useState('')
   const [commitSha, setCommitSha] = useState('')
+  // 카오스는 선택이다. 비워 두면 빌드와 테스트만 검증한다.
+  const [chaosMode, setChaosMode] = useState<ChaosMode | ''>('')
+  const [profile, setProfile] = useState('')
+
+  // Sandbox는 프로필을 받으면 배포 경로가 있는 모드만 받는다. 아니면 422로 돌려준다.
+  const profileNeedsOtherMode =
+    profile.trim() !== '' &&
+    !DEPLOYING_CHAOS_MODES.includes(chaosMode as ChaosMode)
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -27,6 +40,8 @@ export default function SubmitPage() {
         repository_url: url.trim(),
         branch: branch.trim() || undefined,
         commit_sha: commitSha.trim() || undefined,
+        chaos_mode: chaosMode || undefined,
+        deployment_profile: profile.trim() || undefined,
       },
       { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
     )
@@ -80,6 +95,55 @@ export default function SubmitPage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="chaos">장애 주입 (선택)</Label>
+              <select
+                id="chaos"
+                className="border-input bg-transparent h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs"
+                value={chaosMode}
+                onChange={(e) => setChaosMode(e.target.value as ChaosMode | '')}
+              >
+                <option value="">주입하지 않음 (빌드와 테스트만)</option>
+                {CHAOS_MODES.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {mode}
+                  </option>
+                ))}
+              </select>
+              <p className="text-muted-foreground text-xs">
+                비워 두면 장애를 주입하지 않아요. 그때는 빌드와 테스트만 확인한
+                결과예요.
+              </p>
+            </div>
+
+            {chaosMode && (
+              <div className="space-y-2">
+                <Label htmlFor="profile">배포 프로필 (선택)</Label>
+                <Input
+                  id="profile"
+                  className="font-mono"
+                  placeholder="quickbyte-demo"
+                  value={profile}
+                  onChange={(e) => setProfile(e.target.value)}
+                />
+                <p className="text-muted-foreground text-xs">
+                  레포를 Kubernetes에 띄워 장애를 주입할 때 쓰는 프로필이에요.
+                  Sandbox에 등록된 이름만 받아요.
+                </p>
+              </div>
+            )}
+
+            {profileNeedsOtherMode && (
+              <Alert variant="destructive">
+                <AlertTitle>이 조합은 Sandbox가 받지 않아요</AlertTitle>
+                <AlertDescription>
+                  배포 프로필은 litmus_pod_delete, deployment_scale_down,
+                  service_selector_blackhole, rollout_restart 중 하나와 함께
+                  보내야 해요.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {submit.error && (
               <Alert variant="destructive">
                 <AlertTitle>제출하지 못했어요</AlertTitle>
@@ -87,7 +151,11 @@ export default function SubmitPage() {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full" disabled={submit.isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={submit.isPending || profileNeedsOtherMode}
+            >
               {submit.isPending ? '제출 중…' : '검증 시작'}
             </Button>
           </form>

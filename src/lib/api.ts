@@ -39,6 +39,17 @@ export interface AiReports {
   events?: string[]
 }
 
+/** 장애 주입을 실제로 관측했는가.
+ *
+ * 카오스는 선택 단계다. `chaos_mode` 없이 보낸 요청은 빌드와 테스트만 검증한다.
+ * 그 경우 이 값이 false이고, 진행 표시줄은 해당 단계를 완료가 아니라 건너뜀으로 그려야 한다.
+ * 안 돌린 검사를 통과로 보여주면 사용자가 받지 않은 보증을 받았다고 믿는다. */
+export function chaosObserved(reports: AiReports | null | undefined): boolean {
+  const observation = reports?.execution_result?.chaos_observation
+  return !!observation && typeof observation === 'object'
+    && Object.keys(observation as object).length > 0
+}
+
 export interface TaskStatus {
   taskId: string
   currentAgent: AgentStep
@@ -52,10 +63,31 @@ export interface TaskStatus {
   aiReports: AiReports | null
 }
 
+// Sandbox가 받는 값은 닫힌 집합이다(codereferee-sandbox app/main.py).
+// deployment_profile을 주면 배포 경로가 있는 네 가지 중 하나여야 한다.
+export const CHAOS_MODES = [
+  'litmus_pod_delete',
+  'litmus_container_kill',
+  'deployment_scale_down',
+  'service_selector_blackhole',
+  'rollout_restart',
+] as const
+export type ChaosMode = (typeof CHAOS_MODES)[number]
+
+export const DEPLOYING_CHAOS_MODES: readonly ChaosMode[] = [
+  'litmus_pod_delete',
+  'deployment_scale_down',
+  'service_selector_blackhole',
+  'rollout_restart',
+]
+
 export interface SubmitValidationRequest {
   repository_url: string
   branch?: string
   commit_sha?: string
+  // 선택이다. 없으면 빌드와 테스트만 검증하고 장애는 주입하지 않는다.
+  chaos_mode?: ChaosMode
+  deployment_profile?: string
 }
 
 export class ApiError extends Error {

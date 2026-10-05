@@ -6,13 +6,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ApiError, isTerminal } from '@/lib/api'
+import { ApiError, chaosObserved, isTerminal } from '@/lib/api'
 import { useValidation } from '@/lib/queries'
-import { STEP_HINT } from '@/lib/steps'
+import { CHAOS_SKIPPED_HINT, STEP_HINT } from '@/lib/steps'
 
 export default function ValidationPage() {
   const { requestId = '' } = useParams()
   const { data, error, isPending } = useValidation(requestId)
+  const chaosRan = chaosObserved(data?.aiReports)
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
@@ -53,11 +54,17 @@ export default function ValidationPage() {
               <PipelineProgress
                 current={data.currentAgent}
                 iterationCount={data.iterationCount}
+                chaosObserved={chaosRan}
               />
 
               <p className="text-sm text-muted-foreground">
                 {STEP_HINT[data.currentAgent]}
               </p>
+              {isTerminal(data.currentAgent) && !chaosRan && (
+                <p className="text-sm text-muted-foreground">
+                  {CHAOS_SKIPPED_HINT}
+                </p>
+              )}
               <p className="font-mono text-xs text-muted-foreground">
                 {data.taskId} · 갱신 {new Date(data.updatedAt).toLocaleString()}
                 {!isTerminal(data.currentAgent) && ' · 2초마다 갱신 중'}
