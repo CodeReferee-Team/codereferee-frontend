@@ -48,7 +48,15 @@ export interface AiReports {
   execution_result?: Record<string, unknown>
   validation_plan?: Record<string, unknown>
   metrics?: Metrics
-  judge_report?: { status: 'Pass' | 'Fail'; reason: string; evidence: string[] }
+  judge_report?: {
+    status: 'Pass' | 'Fail'
+    // 판정 사유의 정규 코드. 정규 집합은 reasons.ts의 REASON_CATEGORIES에 있지만
+    // 서버가 집합을 넓혀도 응답 파싱이 깨지면 안 되므로 유니온으로 좁히지 않는다.
+    // 구버전 응답에는 없을 수 있어 optional이다.
+    reason_category?: string
+    reason: string
+    evidence: string[]
+  }
   critic_feedback?: {
     issue: string
     root_cause: string
@@ -60,7 +68,19 @@ export interface AiReports {
     patch_guidance: string[]
     verification_steps: string[]
     risk: 'low' | 'medium' | 'high'
+    // LLM 없이 도는 fallback 경로는 diff를 만들지 못해 둘 다 비어서 온다.
+    patch_diff?: string | null
+    edits?: Array<{ path: string; find: string[]; replace: string[] }> | null
   }
+  // Refiner 패치를 적용해 다시 돌린 기록. 패치가 없었으면 빈 배열이다.
+  refine_rounds?: Array<{
+    round: number
+    patch_bytes: number
+    before_judge_status: string | null
+    after_judge_status: string | null
+    sandbox_exit_code: number | null
+    failed_step: string | null
+  }>
   events?: string[]
 }
 
@@ -81,6 +101,24 @@ export interface ChaosOptions {
   deploymentProfile: string | null
   // 서버 ChaosOptions.isEmpty()가 Jackson에 의해 같이 직렬화돼 온다. 의존하지 말고 mode/deploymentProfile로 판단한다.
   empty?: boolean
+}
+
+export interface PatchCheck {
+  accepted?: boolean
+  reason_code?: string
+  reason?: string
+  touched_paths?: string[]
+}
+
+/** 패치가 샌드박스에 들어가기 전에 받은 내용 검사 결과.
+ *
+ * `metrics`는 서버가 Map을 그대로 넘기는 자리라 타입을 좁혀 두지 않았다.
+ * 이 키만 화면에서 문구로 쓰므로 읽는 지점을 한 곳으로 모은다. */
+export function patchCheck(
+  reports: AiReports | null | undefined,
+): PatchCheck | null {
+  const check = reports?.metrics?.patch_check
+  return check && typeof check === 'object' ? (check as PatchCheck) : null
 }
 
 export interface TaskStatus {
