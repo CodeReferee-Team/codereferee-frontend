@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { patchCheck, type AiReports } from '@/lib/api'
+import { patchCheck, policyWarnings, type AiReports } from '@/lib/api'
+import { POLICY_WARNING_LABEL } from '@/lib/reasons'
 
 function EvidenceList({ items }: { items?: string[] }) {
   if (!items?.length) return null
@@ -46,9 +47,34 @@ export function ReportView({ reports }: { reports: AiReports }) {
     events,
   } = reports
   const patch = patchCheck(reports)
+  // 경고는 판정을 뒤집지 않지만 사용자가 알아야 한다. 특히 단일 replica 경고는
+  // "통과"의 의미를 좁힌다. 1대짜리 앱은 그 1대가 멈추면 끊긴다.
+  const warnings = policyWarnings(reports)
 
   return (
     <div className="space-y-4">
+      {warnings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>판정 경고</CardTitle>
+            <CardDescription>
+              합격 여부를 바꾸지는 않지만 알아 두어야 할 내용이에요.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {warnings.map((w) => (
+                <li key={w} className="text-sm">
+                  {POLICY_WARNING_LABEL[w] ?? w}
+                  <span className="ml-2 font-mono text-xs text-muted-foreground">
+                    {w}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
       {judge_report && (
         <Card>
           <CardHeader>
