@@ -89,6 +89,23 @@ export interface AiReports {
  * 카오스는 선택 단계다. `chaos_mode` 없이 보낸 요청은 빌드와 테스트만 검증한다.
  * 그 경우 이 값이 false이고, 진행 표시줄은 해당 단계를 완료가 아니라 건너뜀으로 그려야 한다.
  * 안 돌린 검사를 통과로 보여주면 사용자가 받지 않은 보증을 받았다고 믿는다. */
+/** 우리 쪽 문제로 판정을 못 한 사유.
+ *
+ * status가 ERROR면 워크플로가 Judge를 건너뛰므로 `judge_report`가 비어 있다. 그때
+ * 사용자에게 보여줄 사유는 여기에만 있다. 레포 결함이 아니라는 것을 말해 줘야 한다. */
+export function infraError(reports: AiReports | null | undefined): string | null {
+  const fromSandbox = reports?.execution_result?.infra_error
+  if (typeof fromSandbox === 'string' && fromSandbox) return fromSandbox
+  const fromPreflight = reports?.preflight_report?.infra_error
+  return typeof fromPreflight === 'string' && fromPreflight ? fromPreflight : null
+}
+
+/** 판정을 뒤집지 않는 경고. `metrics.policy_warnings`로 온다. */
+export function policyWarnings(reports: AiReports | null | undefined): string[] {
+  const raw = reports?.metrics?.policy_warnings
+  return Array.isArray(raw) ? raw.filter((w): w is string => typeof w === 'string') : []
+}
+
 export function chaosObserved(reports: AiReports | null | undefined): boolean {
   const observation = reports?.execution_result?.chaos_observation
   return !!observation && typeof observation === 'object'

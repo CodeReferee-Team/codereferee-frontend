@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ApiError, chaosObserved, isTerminal } from '@/lib/api'
+import { ApiError, chaosObserved, infraError, isTerminal } from '@/lib/api'
 import { modeLabel } from '@/lib/chaos'
 import {
   describeError,
@@ -34,6 +34,8 @@ export default function ValidationPage() {
       : null
   // 사유 코드가 있으면 단계 문구보다 정확하다. 모르는 코드는 단계 문구로 돌아간다.
   const reasonCategory = data?.aiReports?.judge_report?.reason_category
+  // ERROR면 Judge를 건너뛰어 judge_report가 비어 있다. 사유는 infra_error에만 있다.
+  const infra = infraError(data?.aiReports)
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
@@ -79,6 +81,7 @@ export default function ValidationPage() {
 
               <p className="text-sm text-muted-foreground">
                 {(reasonCategory && REASON_LABEL[reasonCategory]) ||
+                  (infra && REASON_LABEL[infra]) ||
                   STEP_HINT[data.currentAgent]}
               </p>
               {isTerminal(data.currentAgent) && !chaosRan && (
