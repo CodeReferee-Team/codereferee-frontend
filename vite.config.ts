@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     // BE(Spring Boot)에 CORS 설정이 없으므로 개발 중에는 같은 오리진으로 프록시한다.
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': process.env.CODEREFEREE_BACKEND_URL ?? 'http://localhost:8080',
     },
   },
 })
