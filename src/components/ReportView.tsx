@@ -65,6 +65,14 @@ const CHAOS_TYPE_LABEL: Record<string, string> = {
   pod_kill: 'Pod 삭제',
   pod_delete: 'Pod 삭제',
   container_kill: '컨테이너 종료',
+  pod_cpu_hog: 'CPU Stress',
+  pod_network_latency: '네트워크 지연',
+  pod_network_loss: '패킷 손실',
+  scenario_suite: '시나리오 묶음 검사',
+  pod_memory_hog: '메모리 압박',
+  pod_memory_oom: '메모리 한도 초과',
+  dependency_database_outage: 'DB 의존성 장애',
+  dependency_redis_outage: 'Redis 의존성 장애',
   deployment_scale_down: '배포 스케일 다운',
   service_selector_blackhole: 'Service 라우팅 단절',
   rollout_restart: '롤아웃 재시작',
@@ -84,6 +92,7 @@ const CHAOS_SUMMARY_KEYS = new Set([
 ])
 
 function ChaosObservationCard({ observation: o }: { observation: ChaosObservation }) {
+  const scenarios = Array.isArray(o.scenarios) ? o.scenarios as Record<string, unknown>[] : []
   const extra = Object.entries(o).filter(
     ([k, v]) => !CHAOS_SUMMARY_KEYS.has(k) && (v === null || typeof v !== 'object'),
   )
@@ -122,6 +131,27 @@ function ChaosObservationCard({ observation: o }: { observation: ChaosObservatio
             </Field>
           ))}
         </dl>
+        {scenarios.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">시나리오별 실행 결과</h3>
+            {scenarios.map((scenario, index) => {
+              const observation = (scenario.chaos_observation ?? {}) as Record<string, unknown>
+              const metrics = (scenario.metrics ?? {}) as Record<string, unknown>
+              const type = String(observation.type ?? scenario.chaosMode ?? '')
+              return (
+                <div key={index} className="rounded border p-3 text-sm">
+                  <p className="font-medium">{index + 1}. {CHAOS_TYPE_LABEL[type] ?? type}</p>
+                  <p>관측: {formatValue(scenario.observationStatus)} · 종료 코드: {formatValue(scenario.exitCode)}</p>
+                  <p>가용성: {formatValue(metrics.availability)} · 오류율: {formatValue(metrics.error_rate)}</p>
+                  <p>p95(ms): {formatValue(metrics.p95_latency_ms)} · 복구(초): {formatValue(observation.recovery_seconds)}</p>
+                </div>
+              )
+            })}
+            {Array.isArray(o.not_executed) && o.not_executed.length > 0 && (
+              <p className="text-sm text-muted-foreground">앞선 실험 실패로 실행하지 않은 시나리오: {o.not_executed.join(', ')}</p>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

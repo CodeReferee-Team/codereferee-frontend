@@ -17,6 +17,8 @@ import {
   DEPLOYMENT_PROFILE_PATTERN,
   KNOWN_DEPLOYMENT_PROFILES,
   modeInfo,
+  inspectionMode,
+  SUITES,
 } from '@/lib/chaos'
 import { useSubmitValidation } from '@/lib/queries'
 import { cn } from '@/lib/utils'
@@ -34,6 +36,7 @@ export default function SubmitPage() {
   const [chaosMode, setChaosMode] = useState('')
   const [profile, setProfile] = useState('')
   const [email, setEmail] = useState('')
+  const [extras, setExtras] = useState<string[]>([])
 
   const selectedMode = modeInfo(chaosMode)
   const needsProfile = selectedMode?.needsProfile ?? false
@@ -49,7 +52,7 @@ export default function SubmitPage() {
         repository_url: url.trim(),
         branch: branch.trim() || undefined,
         commit_sha: commitSha.trim() || undefined,
-        chaos_mode: chaosMode || undefined,
+        chaos_mode: inspectionMode(chaosMode, extras) || undefined,
         // 프로필은 레포 배포형 모드에서만 의미가 있다. 기본(fixture) 모드에 보내면 샌드박스가 거절한다.
         deployment_profile: needsProfile ? profileValue : undefined,
         email: email.trim() || undefined,
@@ -119,7 +122,7 @@ export default function SubmitPage() {
                   id="chaos-mode"
                   className={SELECT_CLASS}
                   value={chaosMode}
-                  onChange={(e) => setChaosMode(e.target.value)}
+                  onChange={(e) => { setChaosMode(e.target.value); setExtras([]) }}
                 >
                   <option value="">{DEFAULT_MODE_LABEL}</option>
                   {CHAOS_MODES.map((m) => (
@@ -134,6 +137,23 @@ export default function SubmitPage() {
                     : '레포를 직접 실행하지 않고, 준비된 테스트 서비스로 기본 실험(Pod Kill)을 해요.'}
                 </p>
               </div>
+
+              {needsProfile && (
+                <div className="space-y-2">
+                  <Label>추가 시나리오 (선택)</Label>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {CHAOS_MODES.filter((m) => !m.value.startsWith('suite_') &&
+                      !(SUITES[chaosMode] ?? [chaosMode]).includes(m.value)).map((m) => (
+                      <label key={m.value} className="flex items-center gap-2">
+                        <input type="checkbox" checked={extras.includes(m.value)}
+                          onChange={(e) => setExtras((items) => e.target.checked ?
+                            [...items, m.value] : items.filter((item) => item !== m.value))} />
+                        {m.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {needsProfile && (
                 <div className="space-y-2">
