@@ -96,6 +96,8 @@ export interface SubmitValidationRequest {
   chaos_mode?: string
   // 소문자·숫자·하이픈, 최대 64자
   deployment_profile?: string
+  // 입력하면 검증이 끝났을 때 서버가 이 주소로 PDF 리포트를 보낸다. 비우면 보내지 않는다.
+  email?: string
 }
 
 export class ApiError extends Error {
