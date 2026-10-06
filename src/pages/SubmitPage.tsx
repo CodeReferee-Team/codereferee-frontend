@@ -11,7 +11,19 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  CHAOS_MODES,
+  DEFAULT_MODE_LABEL,
+  DEPLOYMENT_PROFILE_PATTERN,
+  KNOWN_DEPLOYMENT_PROFILES,
+  modeInfo,
+} from '@/lib/chaos'
 import { useSubmitValidation } from '@/lib/queries'
+import { cn } from '@/lib/utils'
+
+// shadcn Input과 같은 모양의 네이티브 select
+const SELECT_CLASS =
+  'h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30'
 
 export default function SubmitPage() {
   const navigate = useNavigate()
@@ -19,6 +31,15 @@ export default function SubmitPage() {
   const [url, setUrl] = useState('')
   const [branch, setBranch] = useState('')
   const [commitSha, setCommitSha] = useState('')
+  const [chaosMode, setChaosMode] = useState('')
+  const [profile, setProfile] = useState('')
+
+  const selectedMode = modeInfo(chaosMode)
+  const needsProfile = selectedMode?.needsProfile ?? false
+  const profileValue = profile.trim()
+  const profileInvalid =
+    needsProfile &&
+    (profileValue === '' || !DEPLOYMENT_PROFILE_PATTERN.test(profileValue))
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -27,6 +48,9 @@ export default function SubmitPage() {
         repository_url: url.trim(),
         branch: branch.trim() || undefined,
         commit_sha: commitSha.trim() || undefined,
+        chaos_mode: chaosMode || undefined,
+        // 프로필은 레포 배포형 모드에서만 의미가 있다. 기본(fixture) 모드에 보내면 샌드박스가 거절한다.
+        deployment_profile: needsProfile ? profileValue : undefined,
       },
       { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
     )
@@ -80,6 +104,54 @@ export default function SubmitPage() {
               </div>
             </div>
 
+            <fieldset className="space-y-3 rounded-lg border p-4">
+              <legend className="px-1 text-sm font-medium">카오스 실험</legend>
+              <div className="space-y-2">
+                <Label htmlFor="chaos-mode">실험 종류</Label>
+                <select
+                  id="chaos-mode"
+                  className={SELECT_CLASS}
+                  value={chaosMode}
+                  onChange={(e) => setChaosMode(e.target.value)}
+                >
+                  <option value="">{DEFAULT_MODE_LABEL}</option>
+                  {CHAOS_MODES.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  {selectedMode
+                    ? selectedMode.description
+                    : '레포를 직접 실행하지 않고, 준비된 테스트 서비스로 기본 실험(Pod Kill)을 해요.'}
+                </p>
+              </div>
+
+              {needsProfile && (
+                <div className="space-y-2">
+                  <Label htmlFor="profile">배포 프로필</Label>
+                  <Input
+                    id="profile"
+                    list="deployment-profiles"
+                    required
+                    className={cn('font-mono', profileInvalid && profile && 'border-destructive')}
+                    placeholder="quickbyte-demo"
+                    value={profile}
+                    onChange={(e) => setProfile(e.target.value)}
+                  />
+                  <datalist id="deployment-profiles">
+                    {KNOWN_DEPLOYMENT_PROFILES.map((p) => (
+                      <option key={p} value={p} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-muted-foreground">
+                    샌드박스가 이 이름으로 배포 설정을 찾아요. 소문자, 숫자, 하이픈만 쓸 수 있어요.
+                  </p>
+                </div>
+              )}
+            </fieldset>
+
             {submit.error && (
               <Alert variant="destructive">
                 <AlertTitle>제출하지 못했어요</AlertTitle>
@@ -87,7 +159,11 @@ export default function SubmitPage() {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full" disabled={submit.isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={submit.isPending || profileInvalid}
+            >
               {submit.isPending ? '제출 중…' : '검증 시작'}
             </Button>
           </form>

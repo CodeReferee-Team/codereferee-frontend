@@ -7,12 +7,29 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ApiError, isTerminal } from '@/lib/api'
+import { modeLabel } from '@/lib/chaos'
+import {
+  describeError,
+  elapsedMs,
+  failureReason,
+  formatDuration,
+  parseServerTime,
+} from '@/lib/format'
 import { useValidation } from '@/lib/queries'
 import { STEP_HINT } from '@/lib/steps'
 
 export default function ValidationPage() {
   const { requestId = '' } = useParams()
   const { data, error, isPending } = useValidation(requestId)
+  const failure = data ? failureReason(data.errorMessage) : null
+  // 종결된 요청만 소요 시간을 보여준다. 옛 레코드는 createdAt이 없어 표시하지 않는다.
+  const elapsed =
+    data && isTerminal(data.currentAgent)
+      ? (() => {
+          const ms = elapsedMs(data.createdAt, data.updatedAt)
+          return ms === null ? null : formatDuration(ms)
+        })()
+      : null
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
@@ -58,8 +75,27 @@ export default function ValidationPage() {
               <p className="text-sm text-muted-foreground">
                 {STEP_HINT[data.currentAgent]}
               </p>
+              <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
+                <div className="flex gap-1.5">
+                  <dt>카오스</dt>
+                  <dd className="text-foreground">
+                    {modeLabel(data.chaosOptions?.mode)}
+                    {data.chaosOptions?.deploymentProfile && (
+                      <span className="ml-1 font-mono text-muted-foreground">
+                        ({data.chaosOptions.deploymentProfile})
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                {elapsed && (
+                  <div className="flex gap-1.5">
+                    <dt>소요 시간</dt>
+                    <dd className="text-foreground">{elapsed}</dd>
+                  </div>
+                )}
+              </dl>
               <p className="font-mono text-xs text-muted-foreground">
-                {data.taskId} · 갱신 {new Date(data.updatedAt).toLocaleString()}
+                {data.taskId} · 갱신 {parseServerTime(data.updatedAt).toLocaleString()}
                 {!isTerminal(data.currentAgent) && ' · 2초마다 갱신 중'}
               </p>
             </CardContent>
@@ -69,15 +105,17 @@ export default function ValidationPage() {
             <Alert className="border-amber-500/50">
               <AlertTitle>판정 불가 (인프라 오류)</AlertTitle>
               <AlertDescription>
-                {data.errorMessage ??
-                  '샌드박스나 파이프라인 문제로 관측할 수 없었어요. 코드 결함으로 판단하지 않았으니 다시 시도해 보세요.'}
+                {describeError(
+                  data.errorMessage,
+                  data.aiReports?.metrics?.infra_error,
+                )}
               </AlertDescription>
             </Alert>
           )}
-          {data.currentAgent === 'FAILED' && data.errorMessage && (
+          {data.currentAgent === 'FAILED' && failure && (
             <Alert variant="destructive">
               <AlertTitle>실패 사유</AlertTitle>
-              <AlertDescription>{data.errorMessage}</AlertDescription>
+              <AlertDescription>{failure}</AlertDescription>
             </Alert>
           )}
 

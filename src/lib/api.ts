@@ -16,13 +16,38 @@ const TERMINAL_STEPS: readonly AgentStep[] = ['PASSED', 'FAILED', 'ERROR']
 
 export const isTerminal = (step: AgentStep) => TERMINAL_STEPS.includes(step)
 
+// 샌드박스의 카오스 관측 원시 데이터 (codereferee-sandbox docs/chaos-v1-contract.md).
+// 실험 종류(pod_kill, scale_down 등)마다 필드가 달라서 알려진 키만 optional로 두고 나머지는 허용한다.
+export interface ChaosObservation {
+  type?: string
+  target_kind?: string
+  target_name?: string
+  namespace?: string
+  replicas?: number
+  started_at?: string
+  replacement_pod_created?: boolean
+  replacement_pod_name?: string
+  recovered?: boolean
+  [key: string]: unknown
+}
+
+// AI가 만든 metrics: 숫자·문자·null 같은 스칼라와 baseline/chaos_observation/source 객체가 섞여 있다.
+export interface Metrics {
+  observation_status?: 'observed' | 'infrastructure_error' | string
+  infra_error?: string
+  chaos_observation?: ChaosObservation
+  baseline?: Record<string, unknown>
+  source?: Record<string, unknown>
+  [key: string]: unknown
+}
+
 // aiReports 내부 구조는 AI 모듈 출력 스키마(agent-output-schema.md)를 따르며 서버는 Map으로 그대로 전달한다.
 // 실패 경로에서는 일부 키가 없을 수 있으므로 전부 optional로 둔다.
 export interface AiReports {
   preflight_report?: Record<string, unknown>
   execution_result?: Record<string, unknown>
   validation_plan?: Record<string, unknown>
-  metrics?: Record<string, unknown>
+  metrics?: Metrics
   judge_report?: { status: 'Pass' | 'Fail'; reason: string; evidence: string[] }
   critic_feedback?: {
     issue: string
@@ -39,16 +64,27 @@ export interface AiReports {
   events?: string[]
 }
 
+// BE는 값의 의미를 모르고 형식만 검증해 그대로 보존한다. 어휘는 샌드박스 소관.
+export interface ChaosOptions {
+  mode: string | null
+  deploymentProfile: string | null
+  // 서버 ChaosOptions.isEmpty()가 Jackson에 의해 같이 직렬화돼 온다. 의존하지 말고 mode/deploymentProfile로 판단한다.
+  empty?: boolean
+}
+
 export interface TaskStatus {
   taskId: string
   currentAgent: AgentStep
   isExecutable: boolean
   iterationCount: number
   errorMessage: string | null
+  // 접수 시각. 칼럼 추가 이전에 저장된 옛 레코드에는 없다(null).
+  createdAt: string | null
   updatedAt: string
   repositoryUrl: string | null
   branch: string | null
   commitSha: string | null
+  chaosOptions: ChaosOptions
   aiReports: AiReports | null
 }
 
@@ -56,6 +92,10 @@ export interface SubmitValidationRequest {
   repository_url: string
   branch?: string
   commit_sha?: string
+  // 소문자·숫자·밑줄, 최대 64자
+  chaos_mode?: string
+  // 소문자·숫자·하이픈, 최대 64자
+  deployment_profile?: string
 }
 
 export class ApiError extends Error {

@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import type { AiReports } from '@/lib/api'
+import type { AiReports, ChaosObservation } from '@/lib/api'
 
 function EvidenceList({ items }: { items?: string[] }) {
   if (!items?.length) return null
@@ -36,9 +36,104 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 const RISK_LABEL = { low: '낮음', medium: '보통', high: '높음' } as const
 
+const METRIC_LABEL: Record<string, string> = {
+  availability: '가용성',
+  error_rate: '오류율',
+  p95_latency_ms: 'p95 지연 (ms)',
+  recovery_seconds: '복구 시간 (초)',
+  restart_count: '재시작 횟수',
+  cpu_usage_percent: 'CPU (%)',
+  memory_usage_mb: '메모리 (MB)',
+  duration_ms: '실행 시간 (ms)',
+  exit_code: '종료 코드',
+  observation_status: '관측 상태',
+  infra_error: '인프라 오류',
+  probe_transport: 'probe 경로',
+}
+
+// 서버가 null 메트릭을 줄 수 있다 (로드맵 13번). 값이 없다는 것과 0은 다르게 보여준다.
+const formatValue = (v: unknown) =>
+  v === null || v === undefined ? '—' : String(v)
+
+const CHAOS_TYPE_LABEL: Record<string, string> = {
+  pod_kill: 'Pod 삭제',
+  pod_delete: 'Pod 삭제',
+  container_kill: '컨테이너 종료',
+  deployment_scale_down: '배포 스케일 다운',
+  service_selector_blackhole: 'Service 라우팅 단절',
+  rollout_restart: '롤아웃 재시작',
+}
+
+// 요약에 따로 보여주는 키. 나머지 스칼라는 "그 밖의 관측값"으로 이어서 보여준다.
+const CHAOS_SUMMARY_KEYS = new Set([
+  'type',
+  'target_kind',
+  'target_name',
+  'namespace',
+  'replicas',
+  'started_at',
+  'replacement_pod_created',
+  'replacement_pod_name',
+  'recovered',
+])
+
+function ChaosObservationCard({ observation: o }: { observation: ChaosObservation }) {
+  const extra = Object.entries(o).filter(
+    ([k, v]) => !CHAOS_SUMMARY_KEYS.has(k) && (v === null || typeof v !== 'object'),
+  )
+  const target = [o.target_kind, o.target_name].filter(Boolean).join(' / ')
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>카오스 관측</CardTitle>
+        <CardDescription>
+          샌드박스가 장애를 주입하고 복구를 관측한 사실이에요. 합격 여부는 Judge가 판단해요.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {o.recovered !== undefined && (
+          <Badge variant={o.recovered ? 'secondary' : 'destructive'}>
+            {o.recovered ? '복구됨' : '복구되지 않음'}
+          </Badge>
+        )}
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {o.type && (
+            <Field label="실험">{CHAOS_TYPE_LABEL[o.type] ?? o.type}</Field>
+          )}
+          {target && <Field label="대상">{target}</Field>}
+          {o.namespace && <Field label="네임스페이스">{o.namespace}</Field>}
+          {o.replicas !== undefined && (
+            <Field label="복제본">{formatValue(o.replicas)}</Field>
+          )}
+          {o.started_at && <Field label="시작">{o.started_at}</Field>}
+          {o.replacement_pod_name && (
+            <Field label="교체된 Pod">{o.replacement_pod_name}</Field>
+          )}
+          {extra.map(([k, v]) => (
+            <Field key={k} label={k}>
+              {formatValue(v)}
+            </Field>
+          ))}
+        </dl>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function ReportView({ reports }: { reports: AiReports }) {
   const { judge_report, critic_feedback, refiner_report, metrics, events } =
     reports
+  // 객체 값(baseline, chaos_observation, source)은 별도 카드나 원본 JSON에서 보여준다.
+  // 그대로 String()하면 "[object Object]"가 찍힌다.
+  const scalarMetrics = Object.entries(metrics ?? {}).filter(
+    ([, v]) => v === null || typeof v !== 'object',
+  )
+  const JUDGE_KEYS = ['status', 'reason', 'evidence']
+  const judgeExtras = Object.entries(judge_report ?? {}).filter(
+    ([k, v]) =>
+      !JUDGE_KEYS.includes(k) && (v === null || typeof v !== 'object'),
+  )
 
   return (
     <div className="space-y-4">
@@ -50,14 +145,28 @@ export function ReportView({ reports }: { reports: AiReports }) {
               실행 결과와 메트릭을 근거로 한 합격 여부
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Badge
-              variant={judge_report.status === 'Pass' ? 'secondary' : 'destructive'}
-            >
-              {judge_report.status}
-            </Badge>
-            <p className="mt-3 text-sm">{judge_report.reason}</p>
+          <CardContent className="space-y-3">
+            {judge_report.status && (
+              <Badge
+                variant={judge_report.status === 'Pass' ? 'secondary' : 'destructive'}
+              >
+                {judge_report.status}
+              </Badge>
+            )}
+            {judge_report.reason && (
+              <p className="text-sm">{judge_report.reason}</p>
+            )}
             <EvidenceList items={judge_report.evidence} />
+            {/* 스키마(status/reason/evidence)에 없는 값은 버리지 않고 그대로 보여준다. */}
+            {judgeExtras.length > 0 && (
+              <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {judgeExtras.map(([k, v]) => (
+                  <Field key={k} label={k}>
+                    <span className="font-mono">{formatValue(v)}</span>
+                  </Field>
+                ))}
+              </dl>
+            )}
           </CardContent>
         </Card>
       )}
@@ -70,9 +179,15 @@ export function ReportView({ reports }: { reports: AiReports }) {
           </CardHeader>
           <CardContent>
             <dl className="space-y-3">
-              <Field label="문제">{critic_feedback.issue}</Field>
-              <Field label="근본 원인">{critic_feedback.root_cause}</Field>
-              <Field label="권장 조치">{critic_feedback.recommended_action}</Field>
+              {critic_feedback.issue && (
+                <Field label="문제">{critic_feedback.issue}</Field>
+              )}
+              {critic_feedback.root_cause && (
+                <Field label="근본 원인">{critic_feedback.root_cause}</Field>
+              )}
+              {critic_feedback.recommended_action && (
+                <Field label="권장 조치">{critic_feedback.recommended_action}</Field>
+              )}
             </dl>
             <EvidenceList items={critic_feedback.evidence} />
           </CardContent>
@@ -116,19 +231,20 @@ export function ReportView({ reports }: { reports: AiReports }) {
         </Card>
       )}
 
-      {metrics && Object.keys(metrics).length > 0 && (
+      {metrics?.chaos_observation && (
+        <ChaosObservationCard observation={metrics.chaos_observation} />
+      )}
+
+      {scalarMetrics.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>메트릭</CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {Object.entries(metrics).map(([k, v]) => (
-                <Field key={k} label={k}>
-                  {/* 서버가 null 메트릭을 줄 수 있다 (로드맵 13번) */}
-                  <span className="font-mono">
-                    {v === null || v === undefined ? '—' : String(v)}
-                  </span>
+              {scalarMetrics.map(([k, v]) => (
+                <Field key={k} label={METRIC_LABEL[k] ?? k}>
+                  <span className="font-mono">{formatValue(v)}</span>
                 </Field>
               ))}
             </dl>
