@@ -50,6 +50,9 @@ export function ReportView({ reports }: { reports: AiReports }) {
   // 경고는 판정을 뒤집지 않지만 사용자가 알아야 한다. 특히 단일 replica 경고는
   // "통과"의 의미를 좁힌다. 1대짜리 앱은 그 1대가 멈추면 끊긴다.
   const warnings = policyWarnings(reports)
+  // 통과면 Critic/Refiner/패치검사는 숨긴다. 이들은 실패 원인 분석·개선안이라
+  // 합격한 검증에 붙으면 "통과 + 당신 코드 고쳐라"라는 모순된 화면이 된다.
+  const isPass = judge_report?.status === 'Pass'
 
   return (
     <div className="space-y-4">
@@ -95,7 +98,7 @@ export function ReportView({ reports }: { reports: AiReports }) {
         </Card>
       )}
 
-      {critic_feedback && (
+      {!isPass && critic_feedback && (
         <Card>
           <CardHeader>
             <CardTitle>Critic 분석</CardTitle>
@@ -112,7 +115,7 @@ export function ReportView({ reports }: { reports: AiReports }) {
         </Card>
       )}
 
-      {refiner_report && (
+      {!isPass && refiner_report && (
         <Card>
           <CardHeader>
             <CardTitle>Refiner 개선안</CardTitle>
