@@ -29,3 +29,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# npm test 빌드 산출물
+.runtime
