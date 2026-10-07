@@ -33,6 +33,7 @@ export default function SubmitPage() {
   const [commitSha, setCommitSha] = useState('')
   const [chaosMode, setChaosMode] = useState('')
   const [profile, setProfile] = useState('')
+  const [email, setEmail] = useState('')
 
   const selectedMode = modeInfo(chaosMode)
   const needsProfile = selectedMode?.needsProfile ?? false
@@ -51,6 +52,7 @@ export default function SubmitPage() {
         chaos_mode: chaosMode || undefined,
         // 프로필은 레포 배포형 모드에서만 의미가 있다. 기본(fixture) 모드에 보내면 샌드박스가 거절한다.
         deployment_profile: needsProfile ? profileValue : undefined,
+        email: email.trim() || undefined,
       },
       { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
     )
@@ -151,6 +153,20 @@ export default function SubmitPage() {
                 </div>
               )}
             </fieldset>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">결과 메일로 받기 (선택)</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                입력하면 검증이 끝났을 때 PDF 리포트를 보내요. 탭을 닫아도 돼요.
+              </p>
+            </div>
 
             {submit.error && (
               <Alert variant="destructive">
