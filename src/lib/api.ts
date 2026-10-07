@@ -48,7 +48,12 @@ export interface AiReports {
   execution_result?: Record<string, unknown>
   validation_plan?: Record<string, unknown>
   metrics?: Metrics
-  judge_report?: { status: 'Pass' | 'Fail'; reason: string; evidence: string[] }
+  judge_report?: {
+    status: 'Pass' | 'Fail'
+    reason: string
+    evidence: string[]
+    reason_category?: string
+  }
   critic_feedback?: {
     issue: string
     root_cause: string
