@@ -13,10 +13,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   CHAOS_MODES,
-  DEPLOYING_CHAOS_MODES,
-  type ChaosMode,
-} from '@/lib/api'
+  DEFAULT_MODE_LABEL,
+  DEPLOYMENT_PROFILE_PATTERN,
+  KNOWN_DEPLOYMENT_PROFILES,
+  modeInfo,
+} from '@/lib/chaos'
 import { useSubmitValidation } from '@/lib/queries'
+import { cn } from '@/lib/utils'
+
+// shadcn Input과 같은 모양의 네이티브 select
+const SELECT_CLASS =
+  'h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30'
 
 export default function SubmitPage() {
   const navigate = useNavigate()
@@ -24,14 +31,16 @@ export default function SubmitPage() {
   const [url, setUrl] = useState('')
   const [branch, setBranch] = useState('')
   const [commitSha, setCommitSha] = useState('')
-  // 카오스는 선택이다. 비워 두면 빌드와 테스트만 검증한다.
-  const [chaosMode, setChaosMode] = useState<ChaosMode | ''>('')
+  const [chaosMode, setChaosMode] = useState('')
   const [profile, setProfile] = useState('')
+  const [email, setEmail] = useState('')
 
-  // Sandbox는 프로필을 받으면 배포 경로가 있는 모드만 받는다. 아니면 422로 돌려준다.
-  const profileNeedsOtherMode =
-    profile.trim() !== '' &&
-    !DEPLOYING_CHAOS_MODES.includes(chaosMode as ChaosMode)
+  const selectedMode = modeInfo(chaosMode)
+  const needsProfile = selectedMode?.needsProfile ?? false
+  const profileValue = profile.trim()
+  const profileInvalid =
+    needsProfile &&
+    (profileValue === '' || !DEPLOYMENT_PROFILE_PATTERN.test(profileValue))
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -41,7 +50,9 @@ export default function SubmitPage() {
         branch: branch.trim() || undefined,
         commit_sha: commitSha.trim() || undefined,
         chaos_mode: chaosMode || undefined,
-        deployment_profile: profile.trim() || undefined,
+        // 프로필은 레포 배포형 모드에서만 의미가 있다. 기본(fixture) 모드에 보내면 샌드박스가 거절한다.
+        deployment_profile: needsProfile ? profileValue : undefined,
+        email: email.trim() || undefined,
       },
       { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
     )
@@ -95,54 +106,67 @@ export default function SubmitPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="chaos">장애 주입 (선택)</Label>
-              <select
-                id="chaos"
-                className="border-input bg-transparent h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs"
-                value={chaosMode}
-                onChange={(e) => setChaosMode(e.target.value as ChaosMode | '')}
-              >
-                <option value="">주입하지 않음 (빌드와 테스트만)</option>
-                {CHAOS_MODES.map((mode) => (
-                  <option key={mode} value={mode}>
-                    {mode}
-                  </option>
-                ))}
-              </select>
-              <p className="text-muted-foreground text-xs">
-                비워 두면 장애를 주입하지 않아요. 그때는 빌드와 테스트만 확인한
-                결과예요.
-              </p>
-            </div>
-
-            {chaosMode && (
+            <fieldset className="space-y-3 rounded-lg border p-4">
+              <legend className="px-1 text-sm font-medium">카오스 실험</legend>
               <div className="space-y-2">
-                <Label htmlFor="profile">배포 프로필 (선택)</Label>
-                <Input
-                  id="profile"
-                  className="font-mono"
-                  placeholder="quickbyte-demo"
-                  value={profile}
-                  onChange={(e) => setProfile(e.target.value)}
-                />
-                <p className="text-muted-foreground text-xs">
-                  레포를 Kubernetes에 띄워 장애를 주입할 때 쓰는 프로필이에요.
-                  Sandbox에 등록된 이름만 받아요.
+                <Label htmlFor="chaos-mode">실험 종류</Label>
+                <select
+                  id="chaos-mode"
+                  className={SELECT_CLASS}
+                  value={chaosMode}
+                  onChange={(e) => setChaosMode(e.target.value)}
+                >
+                  <option value="">{DEFAULT_MODE_LABEL}</option>
+                  {CHAOS_MODES.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  {selectedMode
+                    ? selectedMode.description
+                    : '레포를 직접 실행하지 않고, 준비된 테스트 서비스로 기본 실험(Pod Kill)을 해요.'}
                 </p>
               </div>
-            )}
 
-            {profileNeedsOtherMode && (
-              <Alert variant="destructive">
-                <AlertTitle>이 조합은 Sandbox가 받지 않아요</AlertTitle>
-                <AlertDescription>
-                  배포 프로필은 litmus_pod_delete, deployment_scale_down,
-                  service_selector_blackhole, rollout_restart 중 하나와 함께
-                  보내야 해요.
-                </AlertDescription>
-              </Alert>
-            )}
+              {needsProfile && (
+                <div className="space-y-2">
+                  <Label htmlFor="profile">배포 프로필</Label>
+                  <Input
+                    id="profile"
+                    list="deployment-profiles"
+                    required
+                    className={cn('font-mono', profileInvalid && profile && 'border-destructive')}
+                    placeholder="quickbyte-demo"
+                    value={profile}
+                    onChange={(e) => setProfile(e.target.value)}
+                  />
+                  <datalist id="deployment-profiles">
+                    {KNOWN_DEPLOYMENT_PROFILES.map((p) => (
+                      <option key={p} value={p} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-muted-foreground">
+                    샌드박스가 이 이름으로 배포 설정을 찾아요. 소문자, 숫자, 하이픈만 쓸 수 있어요.
+                  </p>
+                </div>
+              )}
+            </fieldset>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">결과 메일로 받기 (선택)</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                입력하면 검증이 끝났을 때 PDF 리포트를 보내요. 탭을 닫아도 돼요.
+              </p>
+            </div>
 
             {submit.error && (
               <Alert variant="destructive">
@@ -154,7 +178,7 @@ export default function SubmitPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={submit.isPending || profileNeedsOtherMode}
+              disabled={submit.isPending || profileInvalid}
             >
               {submit.isPending ? '제출 중…' : '검증 시작'}
             </Button>
