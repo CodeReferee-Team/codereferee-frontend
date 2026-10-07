@@ -61,8 +61,13 @@ export default function SubmitPage() {
   return (
     <main className="mx-auto flex min-h-svh max-w-xl flex-col justify-center gap-6 p-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">CodeReferee</h1>
-        <p className="mt-1 text-muted-foreground">
+        <p className="mb-2 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          SRE Reliability Check
+        </p>
+        <h1 className="text-4xl font-semibold tracking-tight">
+          Code<span className="text-primary">Referee</span>
+        </h1>
+        <p className="mt-2 max-w-md text-[0.95rem] leading-relaxed text-muted-foreground">
           GitHub 레포를 샌드박스에서 실행하고 장애를 주입해 신뢰성을 검증해요.
         </p>
       </div>
@@ -107,7 +112,7 @@ export default function SubmitPage() {
             </div>
 
             <fieldset className="space-y-3 rounded-lg border p-4">
-              <legend className="px-1 text-sm font-medium">카오스 실험</legend>
+              <legend className="px-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">카오스 실험</legend>
               <div className="space-y-2">
                 <Label htmlFor="chaos-mode">실험 종류</Label>
                 <select
