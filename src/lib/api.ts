@@ -73,6 +73,8 @@ export function chaosObserved(reports: AiReports | null | undefined): boolean {
   const observation = reports?.execution_result?.chaos_observation
   return !!observation && typeof observation === 'object'
     && Object.keys(observation as object).length > 0
+}
+
 // BE는 값의 의미를 모르고 형식만 검증해 그대로 보존한다. 어휘는 샌드박스 소관.
 export interface ChaosOptions {
   mode: string | null
