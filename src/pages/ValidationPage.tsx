@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ApiError, chaosObserved, isTerminal } from '@/lib/api'
-import { ApiError, isTerminal } from '@/lib/api'
 import { modeLabel } from '@/lib/chaos'
 import {
   describeError,
