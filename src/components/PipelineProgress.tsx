@@ -37,18 +37,22 @@ export function PipelineProgress({
           >
             <span
               className={cn(
-                'flex size-5 items-center justify-center rounded-full border text-[11px]',
+                'relative flex size-5 items-center justify-center rounded-full border text-[11px]',
                 done && 'border-emerald-500 bg-emerald-500 text-white',
-                active && 'border-primary',
+                active && 'border-primary/25',
                 skipped && 'border-dashed',
               )}
             >
               {skipped ? (
                 <Minus className="size-3" />
               ) : done ? (
-                <Check className="size-3" />
+                <Check className="size-3 animate-in zoom-in-50 duration-300" />
               ) : active ? (
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
+                <>
+                  {/* 진행 중: 회전 링으로 "지금 이 단계가 일하는 중"을 표현. 모션 끄면 링 숨김. */}
+                  <span className="absolute inset-[-1px] animate-spin rounded-full border-2 border-transparent border-t-primary border-r-primary [animation-duration:0.9s] motion-reduce:hidden" />
+                  <span className="size-2 rounded-full bg-primary motion-reduce:animate-pulse" />
+                </>
               ) : (
                 i + 1
               )}

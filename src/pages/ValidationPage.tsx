@@ -58,7 +58,16 @@ export default function ValidationPage() {
 
       {data && (
         <>
-          <Card>
+          <Card className="relative overflow-hidden">
+            {/* 진행 중에만: 카드 상단에 라이브 작업 표시(indeterminate 바). 종결되면 사라짐. */}
+            {!isTerminal(data.currentAgent) && (
+              <div
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-primary/10 motion-reduce:hidden"
+              >
+                <div className="h-full w-1/3 rounded-full bg-primary [animation:cr-indeterminate_1.4s_ease-in-out_infinite]" />
+              </div>
+            )}
             <CardContent className="space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
