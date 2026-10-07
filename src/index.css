@@ -129,3 +129,9 @@
     @apply font-sans;
     }
 }
+/* 검사 진행 중 카드 상단 indeterminate 바. transform만 애니메이트(레이아웃 영향 없음).
+   prefers-reduced-motion일 땐 바 자체를 숨긴다(motion-reduce:hidden). */
+@keyframes cr-indeterminate {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(400%); }
+}
