@@ -33,3 +33,8 @@ export const STEP_HINT: Record<AgentStep, string> = {
   FAILED: '코드 결함으로 검증에 실패했어요.',
   ERROR: '인프라 문제로 판정할 수 없었어요. 코드 결함이 아니에요.',
 }
+
+// 요청에 카오스 옵션이 없으면 이 단계는 수행되지 않는다. 완료와 구분해 표시한다.
+export const CHAOS_SKIPPED_LABEL = '카오스 실험 (건너뜀)'
+export const CHAOS_SKIPPED_HINT =
+  '이번 검증은 장애를 주입하지 않았어요. 빌드와 테스트만 확인한 결과예요.'

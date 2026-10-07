@@ -6,6 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ApiError, chaosObserved, isTerminal } from '@/lib/api'
 import { ApiError, isTerminal } from '@/lib/api'
 import { modeLabel } from '@/lib/chaos'
 import {
@@ -16,11 +17,12 @@ import {
   parseServerTime,
 } from '@/lib/format'
 import { useValidation } from '@/lib/queries'
-import { STEP_HINT } from '@/lib/steps'
+import { CHAOS_SKIPPED_HINT, STEP_HINT } from '@/lib/steps'
 
 export default function ValidationPage() {
   const { requestId = '' } = useParams()
   const { data, error, isPending } = useValidation(requestId)
+  const chaosRan = chaosObserved(data?.aiReports)
   const failure = data ? failureReason(data.errorMessage) : null
   // 종결된 요청만 소요 시간을 보여준다. 옛 레코드는 createdAt이 없어 표시하지 않는다.
   const elapsed =
@@ -70,11 +72,17 @@ export default function ValidationPage() {
               <PipelineProgress
                 current={data.currentAgent}
                 iterationCount={data.iterationCount}
+                chaosObserved={chaosRan}
               />
 
               <p className="text-sm text-muted-foreground">
                 {STEP_HINT[data.currentAgent]}
               </p>
+              {isTerminal(data.currentAgent) && !chaosRan && (
+                <p className="text-sm text-muted-foreground">
+                  {CHAOS_SKIPPED_HINT}
+                </p>
+              )}
               <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
                 <div className="flex gap-1.5">
                   <dt>카오스</dt>
