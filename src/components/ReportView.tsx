@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { ChaosRecoveryPanel } from '@/components/ChaosRecoveryPanel'
 import { patchCheck, policyWarnings, type AiReports } from '@/lib/api'
 import { POLICY_WARNING_LABEL } from '@/lib/reasons'
 
@@ -97,6 +98,8 @@ export function ReportView({ reports }: { reports: AiReports }) {
           </CardContent>
         </Card>
       )}
+
+      <ChaosRecoveryPanel reports={reports} />
 
       {!isPass && critic_feedback && (
         <Card>

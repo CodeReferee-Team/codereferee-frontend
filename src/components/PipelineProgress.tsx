@@ -1,4 +1,5 @@
-import { Check, Minus } from 'lucide-react'
+import { Fragment } from 'react'
+import { Check, Minus, RotateCw } from 'lucide-react'
 import { isTerminal, type AgentStep } from '@/lib/api'
 import { CHAOS_SKIPPED_LABEL, PIPELINE_STEPS, STEP_LABEL } from '@/lib/steps'
 import { cn } from '@/lib/utils'
@@ -18,50 +19,66 @@ export function PipelineProgress({
   const terminal = isTerminal(current)
   const currentIndex = PIPELINE_STEPS.findIndex((s) => s === current)
 
+  // 각 단계의 상태를 미리 계산해 노드와 연결선이 같은 판단을 공유하게 한다.
+  const stepState = PIPELINE_STEPS.map((step, i) => {
+    const skipped = step === 'CHAOS' && terminal && !chaosObserved
+    // 종결 시: PASSED면 전부 완료, FAILED/ERROR면 어디까지 갔는지 알 수 없어 중립 표시.
+    const done = !skipped && (terminal ? current === 'PASSED' : i < currentIndex)
+    const active = !terminal && i === currentIndex
+    return { step, skipped, done, active }
+  })
+
   return (
-    <ol className="flex flex-wrap gap-x-6 gap-y-3">
-      {PIPELINE_STEPS.map((step, i) => {
-        // 카오스는 요청에 옵션이 있을 때만 돈다. 안 돌린 단계를 완료로 칠하면 사용자가
-        // 받지 않은 보증을 받았다고 믿는다.
-        const skipped = step === 'CHAOS' && terminal && !chaosObserved
-        // 종결 시: PASSED면 전부 완료, FAILED/ERROR면 어디까지 갔는지 알 수 없으므로 중립 표시
-        const done = !skipped && (terminal ? current === 'PASSED' : i < currentIndex)
-        const active = !terminal && i === currentIndex
-        return (
-          <li
-            key={step}
-            className={cn(
-              'flex items-center gap-2 text-sm',
-              done || active ? 'text-foreground' : 'text-muted-foreground',
-            )}
-          >
+    <ol className="flex items-center overflow-x-auto pb-1">
+      {stepState.map(({ step, skipped, done, active }, i) => (
+        <Fragment key={step}>
+          {i > 0 && (
+            // 앞 노드가 완료면 연결선을 채운다 = 데이터가 거기까지 흘렀다는 표시.
+            <div
+              className={cn(
+                'h-px min-w-6 flex-1',
+                stepState[i - 1].done ? 'bg-emerald-500' : 'bg-border',
+              )}
+            />
+          )}
+          <li className="flex shrink-0 flex-col items-center gap-1.5">
             <span
               className={cn(
-                'flex size-5 items-center justify-center rounded-full border text-[11px]',
+                'flex size-6 items-center justify-center rounded-full border text-[11px]',
                 done && 'border-emerald-500 bg-emerald-500 text-white',
-                active && 'border-primary',
-                skipped && 'border-dashed',
+                active && 'border-primary text-primary',
+                !done && !active && !skipped && 'text-muted-foreground',
+                skipped && 'border-dashed text-muted-foreground',
               )}
             >
               {skipped ? (
                 <Minus className="size-3" />
               ) : done ? (
-                <Check className="size-3" />
+                <Check className="size-3.5" />
               ) : active ? (
                 <span className="size-2 animate-pulse rounded-full bg-primary" />
               ) : (
                 i + 1
               )}
             </span>
-            {skipped ? CHAOS_SKIPPED_LABEL : STEP_LABEL[step]}
-            {step === 'REFINING' && active && iterationCount > 0 && (
-              <span className="text-muted-foreground">
-                (라운드 {iterationCount})
+            <span
+              className={cn(
+                'whitespace-nowrap text-[11px]',
+                done || active ? 'text-foreground' : 'text-muted-foreground',
+              )}
+            >
+              {skipped ? CHAOS_SKIPPED_LABEL : STEP_LABEL[step]}
+            </span>
+            {step === 'REFINING' && (
+              // 개선 단계는 패치를 만들어 BASELINE으로 되돌아가는 루프다.
+              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <RotateCw className="size-2.5" />
+                {active && iterationCount > 0 ? `라운드 ${iterationCount}` : '재검증 루프'}
               </span>
             )}
           </li>
-        )
-      })}
+        </Fragment>
+      ))}
     </ol>
   )
 }
