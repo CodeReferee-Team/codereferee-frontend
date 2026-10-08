@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { ChaosRecoveryPanel } from '@/components/ChaosRecoveryPanel'
 import {
   Card,
   CardContent,
@@ -180,6 +181,10 @@ export function ReportView({ reports }: { reports: AiReports }) {
   // 경고는 판정을 뒤집지 않지만 사용자가 알아야 한다. 특히 단일 replica 경고는
   // "통과"의 의미를 좁힌다. 1대짜리 앱은 그 1대가 멈추면 끊긴다.
   const warnings = policyWarnings(reports)
+  // 통과면 Critic/Refiner는 숨긴다. 실패 원인 분석·개선안이라 합격한 검증에 붙으면
+  // "통과 + 당신 코드 고쳐라"라는 모순된 화면이 된다(카오스 경로는 http_status=None이라
+  // Critic이 이를 서비스 실패로 오해한다).
+  const isPass = judge_report?.status === 'Pass'
 
   return (
     <div className="space-y-4">
@@ -239,7 +244,9 @@ export function ReportView({ reports }: { reports: AiReports }) {
         </Card>
       )}
 
-      {critic_feedback && (
+      <ChaosRecoveryPanel reports={reports} />
+
+      {!isPass && critic_feedback && (
         <Card>
           <CardHeader>
             <CardTitle>Critic 분석</CardTitle>
@@ -262,7 +269,7 @@ export function ReportView({ reports }: { reports: AiReports }) {
         </Card>
       )}
 
-      {refiner_report && (
+      {!isPass && refiner_report && (
         <Card>
           <CardHeader>
             <CardTitle>Refiner 개선안</CardTitle>
