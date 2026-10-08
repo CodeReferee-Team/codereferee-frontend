@@ -124,17 +124,26 @@ export default function ValidationPage() {
             </CardContent>
           </Card>
 
-          {data.currentAgent === 'ERROR' && (
-            <Alert className="border-amber-500/50">
-              <AlertTitle>판정 불가 (인프라 오류)</AlertTitle>
-              <AlertDescription>
-                {describeError(
-                  data.errorMessage,
-                  data.aiReports?.metrics?.infra_error,
-                )}
-              </AlertDescription>
-            </Alert>
-          )}
+          {data.currentAgent === 'ERROR' &&
+            (reasonCategory === 'verification_environment_unsupported' ? (
+              <Alert className="border-amber-500/50">
+                <AlertTitle>판정 불가 (검증 환경 한계)</AlertTitle>
+                <AlertDescription>
+                  레포 코드 문제가 아니라, 샌드박스가 이 레포의 테스트를 실행할 환경을
+                  갖추지 못해 검증하지 못했어요. (예: 테스트 의존성 미설치)
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert className="border-amber-500/50">
+                <AlertTitle>판정 불가 (인프라 오류)</AlertTitle>
+                <AlertDescription>
+                  {describeError(
+                    data.errorMessage,
+                    data.aiReports?.metrics?.infra_error,
+                  )}
+                </AlertDescription>
+              </Alert>
+            ))}
           {data.currentAgent === 'FAILED' && failure && (
             <Alert variant="destructive">
               <AlertTitle>실패 사유</AlertTitle>
