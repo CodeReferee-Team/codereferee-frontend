@@ -41,9 +41,12 @@ export default function SubmitPage() {
   const selectedMode = modeInfo(chaosMode)
   const needsProfile = selectedMode?.needsProfile ?? false
   const profileValue = profile.trim()
+  // 프로필을 비워도 된다. 샌드박스가 레포의 .codereferee/validation.yaml에서 읽거나
+  // Dockerfile로 자동 감지한다. 값을 넣었을 때만 형식을 검사한다(오타 조기 차단).
   const profileInvalid =
     needsProfile &&
-    (profileValue === '' || !DEPLOYMENT_PROFILE_PATTERN.test(profileValue))
+    profileValue !== '' &&
+    !DEPLOYMENT_PROFILE_PATTERN.test(profileValue)
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -53,8 +56,9 @@ export default function SubmitPage() {
         branch: branch.trim() || undefined,
         commit_sha: commitSha.trim() || undefined,
         chaos_mode: inspectionMode(chaosMode, extras) || undefined,
-        // 프로필은 레포 배포형 모드에서만 의미가 있다. 기본(fixture) 모드에 보내면 샌드박스가 거절한다.
-        deployment_profile: needsProfile ? profileValue : undefined,
+        // 프로필은 레포 배포형 모드에서만 보낸다. 비우면 보내지 않고, 샌드박스가
+        // 레포 설정(.codereferee/validation.yaml)이나 Dockerfile로 자동 해소한다.
+        deployment_profile: needsProfile && profileValue ? profileValue : undefined,
         email: email.trim() || undefined,
       },
       { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
@@ -157,13 +161,12 @@ export default function SubmitPage() {
 
               {needsProfile && (
                 <div className="space-y-2">
-                  <Label htmlFor="profile">배포 프로필</Label>
+                  <Label htmlFor="profile">배포 프로필 (선택)</Label>
                   <Input
                     id="profile"
                     list="deployment-profiles"
-                    required
                     className={cn('font-mono', profileInvalid && profile && 'border-destructive')}
-                    placeholder="quickbyte-demo"
+                    placeholder="비워두면 자동 — 레포 설정에서 읽어요"
                     value={profile}
                     onChange={(e) => setProfile(e.target.value)}
                   />
@@ -173,7 +176,9 @@ export default function SubmitPage() {
                     ))}
                   </datalist>
                   <p className="text-xs text-muted-foreground">
-                    샌드박스가 이 이름으로 배포 설정을 찾아요. 소문자, 숫자, 하이픈만 쓸 수 있어요.
+                    비워두면 레포의 <code className="font-mono">.codereferee/validation.yaml</code>이나
+                    Dockerfile로 샌드박스가 자동 감지해요. 설정이 없는 레포(예: QuickByte)만
+                    등록된 프로필명을 넣으세요.
                   </p>
                 </div>
               )}
