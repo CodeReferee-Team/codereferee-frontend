@@ -1,6 +1,45 @@
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { AiReports } from '@/lib/api'
 import { cn } from '@/lib/utils'
+
+// 결과 로드 시 숫자가 0→목표로 올라간다(복구율 등). 영상 역동성용.
+function CountUp({
+  value,
+  duration = 1200,
+  decimals = 1,
+  suffix = '%',
+}: {
+  value: number | null
+  duration?: number
+  decimals?: number
+  suffix?: string
+}) {
+  const [n, setN] = useState(0)
+  useEffect(() => {
+    if (value == null) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setN(value)
+      return
+    }
+    let raf = 0
+    const start = performance.now()
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / duration)
+      setN(value * (1 - Math.pow(1 - p, 3))) // easeOutCubic
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [value, duration])
+  if (value == null) return <>—</>
+  return (
+    <>
+      {n.toFixed(decimals)}
+      {suffix}
+    </>
+  )
+}
 
 // 서버는 probe별 시계열이 아니라 집계값만 내려준다(availability, recovery_seconds,
 // started/recovered_at). 그래서 이 패널은 "진짜 측정 곡선"이 아니라 집계로 그린
@@ -84,7 +123,7 @@ export function ChaosRecoveryPanel({ reports }: { reports: AiReports }) {
         <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
           <div>
             <div className={cn('text-3xl font-semibold tabular-nums', availTone)}>
-              {availPct != null ? `${availPct.toFixed(1)}%` : '—'}
+              <CountUp value={availPct} decimals={1} />
             </div>
             <div className="text-xs text-muted-foreground">장애 중 가동률</div>
           </div>
