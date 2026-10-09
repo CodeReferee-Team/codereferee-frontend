@@ -1,0 +1,129 @@
+/* GitSentinel-inspired cockpit 리스킨 — 결과 화면 전용(.gs-cockpit 스코프).
+   기존 shadcn 컴포넌트를 네온/다크로 재스타일한다. 신뢰성 의미(chaos·가동률·복구·SLO)는 유지. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+body:has(.gs-cockpit) {
+  background-color: #08090e;
+  background-image: radial-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.gs-cockpit {
+  color: #e6f7ff;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.gs-cockpit h1,
+.gs-cockpit h2,
+.gs-cockpit [data-slot='card-title'] {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.01em;
+  color: #e6f7ff;
+}
+
+.gs-cockpit .font-mono,
+.gs-cockpit code,
+.gs-cockpit [data-slot='card-description'] {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.gs-cockpit .text-muted-foreground {
+  color: #7a889b !important;
+}
+
+/* 글래스 카드 + 사이버 테두리 */
+.gs-cockpit [data-slot='card'] {
+  background: rgba(15, 17, 26, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  border-radius: 4px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 24px -8px rgba(0, 240, 255, 0.12);
+  color: #e6f7ff;
+}
+
+/* 자가치유 카드 강조 — 민트 글로우 */
+.gs-cockpit .border-emerald-500\/40 {
+  border-color: rgba(0, 255, 135, 0.45) !important;
+  box-shadow: 0 0 28px -4px rgba(0, 255, 135, 0.22);
+}
+
+/* Badge — 네온 HUD 칩 */
+.gs-cockpit [data-slot='badge'] {
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+}
+/* 모든 badge 기본 클래스에 aria-invalid:*-destructive가 들어 있어, 실제 variant인
+   bg-* 토큰으로만 타겟한다. Pass/clean=민트, Fail=crimson, warn=amber. */
+.gs-cockpit [data-slot='badge'][class*='bg-secondary'],
+.gs-cockpit [data-slot='badge'][class*='bg-emerald'],
+.gs-cockpit [data-slot='badge'][class*='bg-green'] {
+  background: rgba(0, 255, 135, 0.12) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.4) !important;
+}
+.gs-cockpit [data-slot='badge'][class*='bg-destructive'],
+.gs-cockpit [data-slot='badge'][class*='bg-red'] {
+  background: rgba(255, 0, 85, 0.14) !important;
+  color: #ff4d7d !important;
+  border: 1px solid rgba(255, 0, 85, 0.4) !important;
+}
+.gs-cockpit [data-slot='badge'][class*='bg-amber'],
+.gs-cockpit [data-slot='badge'][class*='bg-yellow'] {
+  background: rgba(255, 184, 0, 0.12) !important;
+  color: #ffb800 !important;
+  border: 1px solid rgba(255, 184, 0, 0.4) !important;
+}
+
+/* 큰 텔레메트리 숫자 — 네온 발광 */
+.gs-cockpit .text-emerald-600,
+.gs-cockpit .text-emerald-500,
+.gs-cockpit .text-green-600,
+.gs-cockpit .text-green-500 {
+  color: #00ff87 !important;
+  text-shadow: 0 0 16px rgba(0, 255, 135, 0.4);
+}
+.gs-cockpit .text-red-600,
+.gs-cockpit .text-red-500 {
+  color: #ff4d7d !important;
+}
+
+/* 자가치유 스테퍼 — 네온 dot + glow */
+.gs-cockpit .bg-red-500 {
+  background: #ff0055 !important;
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+}
+.gs-cockpit .bg-amber-500 {
+  background: #ffb800 !important;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.6);
+}
+.gs-cockpit .bg-violet-500 {
+  background: #7928ca !important;
+  box-shadow: 0 0 12px rgba(121, 40, 202, 0.7);
+}
+.gs-cockpit .bg-emerald-500 {
+  background: #00ff87 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 135, 0.6);
+}
+.gs-cockpit .bg-border {
+  background: rgba(0, 240, 255, 0.18) !important;
+}
+
+/* Primary 버튼 — 사이버 시안 */
+.gs-cockpit button[class*='bg-primary'],
+.gs-cockpit a[class*='bg-primary'] {
+  background: #00f0ff;
+  color: #08090e;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+/* 코드/diff 블록 obsidian */
+.gs-cockpit pre,
+.gs-cockpit .bg-muted {
+  background: #0d0e13 !important;
+  border: 1px solid rgba(0, 240, 255, 0.12);
+}
