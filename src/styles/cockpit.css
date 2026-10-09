@@ -181,3 +181,53 @@ body:has(.gs-cockpit) {
   background: rgba(15, 17, 26, 0.75) !important;
   backdrop-filter: blur(12px);
 }
+
+/* 자가치유 스테퍼 — 결과 로드 시 단계별 순차 등장(치유 시퀀스). 영상 임팩트용. */
+@keyframes gs-reveal {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes gs-pass-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(0, 255, 135, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(0, 255, 135, 0.95);
+  }
+}
+.gs-heal-steps > li {
+  opacity: 0;
+  animation: gs-reveal 0.5s ease forwards;
+}
+.gs-heal-steps > li:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.gs-heal-steps > li:nth-child(2) {
+  animation-delay: 0.75s;
+}
+.gs-heal-steps > li:nth-child(3) {
+  animation-delay: 1.3s;
+}
+.gs-heal-steps > li:nth-child(4) {
+  animation-delay: 1.85s;
+}
+/* 마지막(PASS) dot은 등장 후 맥동 발광 */
+.gs-heal-steps > li:nth-child(4) .bg-emerald-500 {
+  animation: gs-pass-pulse 1.6s ease-in-out 2.4s 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-heal-steps > li {
+    opacity: 1;
+    animation: none;
+  }
+  .gs-heal-steps > li:nth-child(4) .bg-emerald-500 {
+    animation: none;
+  }
+}
