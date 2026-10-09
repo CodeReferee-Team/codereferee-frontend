@@ -231,3 +231,28 @@ body:has(.gs-cockpit) {
     animation: none;
   }
 }
+
+/* 이벤트 로그 — 한 줄씩 흐르는 터미널 스트림 + 깜빡이는 커서 */
+.gs-log > li {
+  opacity: 0;
+  animation: gs-reveal 0.3s ease forwards;
+  animation-delay: calc(var(--i, 0) * 0.08s);
+}
+.gs-log-cursor {
+  color: #00f0ff;
+  opacity: 1 !important;
+}
+.gs-caret {
+  animation: gs-blink 1s step-end infinite;
+}
+@keyframes gs-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-log > li {
+    opacity: 1;
+    animation: none;
+  }
+}

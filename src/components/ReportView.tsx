@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ChaosRecoveryPanel } from '@/components/ChaosRecoveryPanel'
 import {
@@ -518,10 +518,18 @@ export function ReportView({ reports }: { reports: AiReports }) {
             <CardTitle>이벤트 로그</CardTitle>
           </CardHeader>
           <CardContent>
-            <ol className="space-y-1 font-mono text-xs">
+            <ol className="gs-log space-y-1 font-mono text-xs">
               {events.map((e, i) => (
-                <li key={i}>{e}</li>
+                <li key={i} style={{ '--i': i } as CSSProperties}>
+                  {e}
+                </li>
               ))}
+              <li
+                className="gs-log-cursor"
+                style={{ '--i': events.length } as CSSProperties}
+              >
+                <span className="gs-caret">▌</span>
+              </li>
             </ol>
           </CardContent>
         </Card>
