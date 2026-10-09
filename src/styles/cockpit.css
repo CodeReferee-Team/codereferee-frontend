@@ -1,0 +1,300 @@
+/* GitSentinel-inspired cockpit 리스킨 — 결과 화면 전용(.gs-cockpit 스코프).
+   기존 shadcn 컴포넌트를 네온/다크로 재스타일한다. 신뢰성 의미(chaos·가동률·복구·SLO)는 유지. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+body:has(.gs-cockpit) {
+  background-color: #08090e;
+  background-image: radial-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.gs-cockpit {
+  color: #e6f7ff;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.gs-cockpit h1,
+.gs-cockpit h2,
+.gs-cockpit [data-slot='card-title'] {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.01em;
+  color: #e6f7ff;
+}
+
+.gs-cockpit .font-mono,
+.gs-cockpit code,
+.gs-cockpit [data-slot='card-description'] {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.gs-cockpit .text-muted-foreground {
+  color: #7a889b !important;
+}
+
+/* 글래스 카드 + 사이버 테두리 */
+.gs-cockpit [data-slot='card'] {
+  background: rgba(15, 17, 26, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  border-radius: 4px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 24px -8px rgba(0, 240, 255, 0.12);
+  color: #e6f7ff;
+}
+
+/* 자가치유 카드 강조 — 민트 글로우 */
+.gs-cockpit .border-emerald-500\/40 {
+  border-color: rgba(0, 255, 135, 0.45) !important;
+  box-shadow: 0 0 28px -4px rgba(0, 255, 135, 0.22);
+}
+
+/* Badge — 네온 HUD 칩 */
+.gs-cockpit [data-slot='badge'] {
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+}
+/* 모든 badge 기본 클래스에 aria-invalid:*-destructive가 들어 있어, 실제 variant인
+   bg-* 토큰으로만 타겟한다. Pass/clean=민트, Fail=crimson, warn=amber. */
+.gs-cockpit [data-slot='badge'][class*='bg-secondary'],
+.gs-cockpit [data-slot='badge'][class*='bg-emerald'],
+.gs-cockpit [data-slot='badge'][class*='bg-green'] {
+  background: rgba(0, 255, 135, 0.12) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.4) !important;
+}
+.gs-cockpit [data-slot='badge'][class*='bg-destructive'],
+.gs-cockpit [data-slot='badge'][class*='bg-red'] {
+  background: rgba(255, 0, 85, 0.14) !important;
+  color: #ff4d7d !important;
+  border: 1px solid rgba(255, 0, 85, 0.4) !important;
+}
+.gs-cockpit [data-slot='badge'][class*='bg-amber'],
+.gs-cockpit [data-slot='badge'][class*='bg-yellow'] {
+  background: rgba(255, 184, 0, 0.12) !important;
+  color: #ffb800 !important;
+  border: 1px solid rgba(255, 184, 0, 0.4) !important;
+}
+
+/* 큰 텔레메트리 숫자 — 네온 발광 */
+.gs-cockpit .text-emerald-600,
+.gs-cockpit .text-emerald-500,
+.gs-cockpit .text-green-600,
+.gs-cockpit .text-green-500 {
+  color: #00ff87 !important;
+  text-shadow: 0 0 16px rgba(0, 255, 135, 0.4);
+}
+.gs-cockpit .text-red-600,
+.gs-cockpit .text-red-500 {
+  color: #ff4d7d !important;
+}
+
+/* 자가치유 스테퍼 — 네온 dot + glow */
+.gs-cockpit .bg-red-500 {
+  background: #ff0055 !important;
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+}
+.gs-cockpit .bg-amber-500 {
+  background: #ffb800 !important;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.6);
+}
+.gs-cockpit .bg-violet-500 {
+  background: #7928ca !important;
+  box-shadow: 0 0 12px rgba(121, 40, 202, 0.7);
+}
+.gs-cockpit .bg-emerald-500 {
+  background: #00ff87 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 135, 0.6);
+}
+.gs-cockpit .bg-border {
+  background: rgba(0, 240, 255, 0.18) !important;
+}
+
+/* Primary 버튼 — 사이버 시안 */
+.gs-cockpit button[class*='bg-primary'],
+.gs-cockpit a[class*='bg-primary'] {
+  background: #00f0ff;
+  color: #08090e;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+/* 코드/diff 블록 obsidian */
+.gs-cockpit pre,
+.gs-cockpit .bg-muted {
+  background: #0d0e13 !important;
+  border: 1px solid rgba(0, 240, 255, 0.12);
+}
+
+/* 워크플로 스테퍼 — 진행중=시안 글로우, 완료=민트, 연결선 */
+.gs-cockpit .border-primary\/25,
+.gs-cockpit .border-primary {
+  border-color: rgba(0, 240, 255, 0.4) !important;
+}
+.gs-cockpit .border-t-primary {
+  border-top-color: #00f0ff !important;
+}
+.gs-cockpit .border-r-primary {
+  border-right-color: #00f0ff !important;
+}
+.gs-cockpit .bg-primary {
+  background-color: #00f0ff !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+}
+/* 스테퍼 라벨 — mono 대문자 HUD */
+.gs-cockpit ol .text-\[11px\] {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+/* 입력 필드 — obsidian + 시안 포커스 */
+.gs-cockpit input,
+.gs-cockpit textarea,
+.gs-cockpit select,
+.gs-cockpit [data-slot='select-trigger'] {
+  background: #0f111a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px !important;
+  color: #e6f7ff !important;
+  font-family: 'JetBrains Mono', monospace;
+}
+.gs-cockpit input:focus,
+.gs-cockpit textarea:focus,
+.gs-cockpit select:focus {
+  border-color: #00f0ff !important;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.3) !important;
+  outline: none !important;
+}
+.gs-cockpit input::placeholder {
+  color: #5a6678;
+}
+
+/* 뒤로가기 링크 등 */
+.gs-cockpit a {
+  color: inherit;
+}
+
+/* Alert(판정 불가/실패) — 톤 맞춤 */
+.gs-cockpit [role='alert'] {
+  background: rgba(15, 17, 26, 0.75) !important;
+  backdrop-filter: blur(12px);
+}
+
+/* 자가치유 스테퍼 — 결과 로드 시 단계별 순차 등장(치유 시퀀스). 영상 임팩트용. */
+@keyframes gs-reveal {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes gs-pass-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(0, 255, 135, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(0, 255, 135, 0.95);
+  }
+}
+.gs-heal-steps > li {
+  opacity: 0;
+  animation: gs-reveal 0.5s ease forwards;
+}
+.gs-heal-steps > li:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.gs-heal-steps > li:nth-child(2) {
+  animation-delay: 0.75s;
+}
+.gs-heal-steps > li:nth-child(3) {
+  animation-delay: 1.3s;
+}
+.gs-heal-steps > li:nth-child(4) {
+  animation-delay: 1.85s;
+}
+/* 마지막(PASS) dot은 등장 후 맥동 발광 */
+.gs-heal-steps > li:nth-child(4) .bg-emerald-500 {
+  animation: gs-pass-pulse 1.6s ease-in-out 2.4s 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-heal-steps > li {
+    opacity: 1;
+    animation: none;
+  }
+  .gs-heal-steps > li:nth-child(4) .bg-emerald-500 {
+    animation: none;
+  }
+}
+
+/* AI 패치 diff — GitHub식 (obsidian + 빨강-/초록+) */
+.gs-diff {
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #0d0e13;
+}
+.gs-diff-file {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #7a889b;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+  background: rgba(0, 240, 255, 0.04);
+}
+.gs-diff-body {
+  padding: 0.4rem 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+.gs-diff-body > div {
+  padding: 0 0.6rem;
+  white-space: pre;
+}
+.gs-diff-add {
+  background: rgba(0, 255, 135, 0.1);
+  color: #00ff87;
+}
+.gs-diff-del {
+  background: rgba(255, 0, 85, 0.1);
+  color: #ff4d7d;
+}
+.gs-diff-ctx {
+  color: #b9cacb;
+}
+.gs-diff-hunk {
+  color: #a78bfa;
+  background: rgba(121, 40, 202, 0.08);
+}
+
+/* 이벤트 로그 — 한 줄씩 흐르는 터미널 스트림 + 깜빡이는 커서 */
+.gs-log > li {
+  opacity: 0;
+  animation: gs-reveal 0.3s ease forwards;
+  animation-delay: calc(var(--i, 0) * 0.08s);
+}
+.gs-log-cursor {
+  color: #00f0ff;
+  opacity: 1 !important;
+}
+.gs-caret {
+  animation: gs-blink 1s step-end infinite;
+}
+@keyframes gs-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-log > li {
+    opacity: 1;
+    animation: none;
+  }
+}

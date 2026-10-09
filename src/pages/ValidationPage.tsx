@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router'
+import '@/styles/cockpit.css'
 import { PipelineProgress } from '@/components/PipelineProgress'
 import { ReportView } from '@/components/ReportView'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -38,7 +39,7 @@ export default function ValidationPage() {
   const infra = infraError(data?.aiReports)
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
+    <main className="gs-cockpit mx-auto max-w-4xl space-y-6 p-6">
       <Button variant="ghost" size="sm" render={<Link to="/" />}>
         ← 새 검증
       </Button>
