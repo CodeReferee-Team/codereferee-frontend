@@ -4,9 +4,11 @@ import ValidationPage from '@/pages/ValidationPage'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<SubmitPage />} />
-      <Route path="/validations/:requestId" element={<ValidationPage />} />
-    </Routes>
+    <div className="gs-cockpit min-h-screen">
+      <Routes>
+        <Route path="/" element={<SubmitPage />} />
+        <Route path="/validations/:requestId" element={<ValidationPage />} />
+      </Routes>
+    </div>
   )
 }
