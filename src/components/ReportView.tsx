@@ -193,7 +193,42 @@ function selfHealing(reports: AiReports) {
       events.some((e) => e.includes('chaos_single_replica_topology')) ||
       /replicas/.test(editText(edit?.find)),
     availability,
+    patchDiff: reports.refiner_report?.patch_diff ?? null,
   }
+}
+
+// AI가 만든 실제 패치를 GitHub식 diff로 보여준다. "어떤 코드를 어떻게 고치는지" 증거.
+function PatchDiff({ diff }: { diff: string }) {
+  const lines = diff.split('\n')
+  const fileLine = lines.find((l) => l.startsWith('+++ '))
+  const file = fileLine ? fileLine.replace(/^\+\+\+ b\//, '') : '제안 패치'
+  const body = lines.filter(
+    (l) =>
+      !l.startsWith('diff --git') &&
+      !l.startsWith('--- ') &&
+      !l.startsWith('+++ '),
+  )
+  return (
+    <div className="gs-diff">
+      <div className="gs-diff-file">{file}</div>
+      <div className="gs-diff-body">
+        {body.map((l, i) => {
+          const cls = l.startsWith('@@')
+            ? 'gs-diff-hunk'
+            : l.startsWith('+')
+              ? 'gs-diff-add'
+              : l.startsWith('-')
+                ? 'gs-diff-del'
+                : 'gs-diff-ctx'
+          return (
+            <div key={i} className={cls}>
+              {l || ' '}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 function LoopStep({
@@ -280,6 +315,14 @@ function SelfHealingCard({
             패치 적용 후 재검증에서 Fail → Pass. {availPct ? `가동률 ${availPct}.` : ''}
           </LoopStep>
         </ol>
+        {data.patchDiff && (
+          <div className="space-y-2">
+            <h4 className="text-xs font-medium text-muted-foreground">
+              AI가 제안한 패치
+            </h4>
+            <PatchDiff diff={data.patchDiff} />
+          </div>
+        )}
       </CardContent>
     </Card>
   )
