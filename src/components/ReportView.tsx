@@ -260,7 +260,7 @@ function SelfHealingCard({
           패치를 적용해 다시 돌리니 pod 하나가 죽어도 나머지가 트래픽을 받아{' '}
           {availPct ? `가동률 ${availPct}로 ` : ''}통과했어요.
         </p>
-        <ol className="space-y-4">
+        <ol className="gs-heal-steps space-y-4">
           <LoopStep color="bg-red-500" title="① 초기 검증 실패">
             {problem}
           </LoopStep>
