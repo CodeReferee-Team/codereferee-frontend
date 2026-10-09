@@ -232,6 +232,48 @@ body:has(.gs-cockpit) {
   }
 }
 
+/* AI 패치 diff — GitHub식 (obsidian + 빨강-/초록+) */
+.gs-diff {
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #0d0e13;
+}
+.gs-diff-file {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #7a889b;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+  background: rgba(0, 240, 255, 0.04);
+}
+.gs-diff-body {
+  padding: 0.4rem 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+.gs-diff-body > div {
+  padding: 0 0.6rem;
+  white-space: pre;
+}
+.gs-diff-add {
+  background: rgba(0, 255, 135, 0.1);
+  color: #00ff87;
+}
+.gs-diff-del {
+  background: rgba(255, 0, 85, 0.1);
+  color: #ff4d7d;
+}
+.gs-diff-ctx {
+  color: #b9cacb;
+}
+.gs-diff-hunk {
+  color: #a78bfa;
+  background: rgba(121, 40, 202, 0.08);
+}
+
 /* 이벤트 로그 — 한 줄씩 흐르는 터미널 스트림 + 깜빡이는 커서 */
 .gs-log > li {
   opacity: 0;
