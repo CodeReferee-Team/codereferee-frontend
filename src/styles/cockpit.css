@@ -127,3 +127,57 @@ body:has(.gs-cockpit) {
   background: #0d0e13 !important;
   border: 1px solid rgba(0, 240, 255, 0.12);
 }
+
+/* 워크플로 스테퍼 — 진행중=시안 글로우, 완료=민트, 연결선 */
+.gs-cockpit .border-primary\/25,
+.gs-cockpit .border-primary {
+  border-color: rgba(0, 240, 255, 0.4) !important;
+}
+.gs-cockpit .border-t-primary {
+  border-top-color: #00f0ff !important;
+}
+.gs-cockpit .border-r-primary {
+  border-right-color: #00f0ff !important;
+}
+.gs-cockpit .bg-primary {
+  background-color: #00f0ff !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+}
+/* 스테퍼 라벨 — mono 대문자 HUD */
+.gs-cockpit ol .text-\[11px\] {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+/* 입력 필드 — obsidian + 시안 포커스 */
+.gs-cockpit input,
+.gs-cockpit textarea,
+.gs-cockpit select,
+.gs-cockpit [data-slot='select-trigger'] {
+  background: #0f111a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px !important;
+  color: #e6f7ff !important;
+  font-family: 'JetBrains Mono', monospace;
+}
+.gs-cockpit input:focus,
+.gs-cockpit textarea:focus,
+.gs-cockpit select:focus {
+  border-color: #00f0ff !important;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.3) !important;
+  outline: none !important;
+}
+.gs-cockpit input::placeholder {
+  color: #5a6678;
+}
+
+/* 뒤로가기 링크 등 */
+.gs-cockpit a {
+  color: inherit;
+}
+
+/* Alert(판정 불가/실패) — 톤 맞춤 */
+.gs-cockpit [role='alert'] {
+  background: rgba(15, 17, 26, 0.75) !important;
+  backdrop-filter: blur(12px);
+}
