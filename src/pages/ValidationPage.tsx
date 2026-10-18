@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router'
 import '@/styles/cockpit.css'
+import { LiveFlowLog } from '@/components/LiveFlowLog'
 import { PipelineProgress } from '@/components/PipelineProgress'
 import { ReportView } from '@/components/ReportView'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -87,6 +88,11 @@ export default function ValidationPage() {
                 current={data.currentAgent}
                 iterationCount={data.iterationCount}
                 chaosObserved={chaosRan}
+              />
+
+              <LiveFlowLog
+                current={data.currentAgent}
+                iterationCount={data.iterationCount}
               />
 
               <p className="text-sm text-muted-foreground">

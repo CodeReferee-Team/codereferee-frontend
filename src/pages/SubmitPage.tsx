@@ -41,9 +41,11 @@ export default function SubmitPage() {
   const selectedMode = modeInfo(chaosMode)
   const needsProfile = selectedMode?.needsProfile ?? false
   const profileValue = profile.trim()
+  // 배포 프로필은 옵셔널이다. 레포가 자체 .codereferee/validation.yaml을 가지면 프로필 없이
+  // 그 설정으로 배포된다(샌드박스 resolve_plan). 비워서 보내면 샌드박스가 레포 설정을 쓰므로,
+  // 비어 있다고 막지 않는다. 값이 있을 때만 형식을 검증한다.
   const profileInvalid =
-    needsProfile &&
-    (profileValue === '' || !DEPLOYMENT_PROFILE_PATTERN.test(profileValue))
+    needsProfile && profileValue !== '' && !DEPLOYMENT_PROFILE_PATTERN.test(profileValue)
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -54,7 +56,7 @@ export default function SubmitPage() {
         commit_sha: commitSha.trim() || undefined,
         chaos_mode: inspectionMode(chaosMode, extras) || undefined,
         // 프로필은 레포 배포형 모드에서만 의미가 있다. 기본(fixture) 모드에 보내면 샌드박스가 거절한다.
-        deployment_profile: needsProfile ? profileValue : undefined,
+        deployment_profile: needsProfile && profileValue ? profileValue : undefined,
         email: email.trim() || undefined,
       },
       { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
@@ -161,9 +163,8 @@ export default function SubmitPage() {
                   <Input
                     id="profile"
                     list="deployment-profiles"
-                    required
                     className={cn('font-mono', profileInvalid && profile && 'border-destructive')}
-                    placeholder="quickbyte-demo"
+                    placeholder="비우면 레포의 .codereferee 설정 사용"
                     value={profile}
                     onChange={(e) => setProfile(e.target.value)}
                   />
