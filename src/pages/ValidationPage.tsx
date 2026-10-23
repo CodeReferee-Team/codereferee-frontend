@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ApiError, chaosObserved, infraError, isTerminal } from '@/lib/api'
-import { modeLabel } from '@/lib/chaos'
+import { describeStop, modeLabel } from '@/lib/chaos'
 import {
   describeError,
   elapsedMs,
@@ -36,6 +36,7 @@ export default function ValidationPage() {
   const reasonCategory = data?.aiReports?.judge_report?.reason_category
   // ERROR면 Judge를 건너뛰어 judge_report가 비어 있다. 사유는 infra_error에만 있다.
   const infra = infraError(data?.aiReports)
+  const stop = describeStop(data?.aiReports?.metrics?.stopped_at, data?.aiReports?.metrics?.stopped_reason)
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
@@ -141,6 +142,7 @@ export default function ValidationPage() {
                     data.errorMessage,
                     data.aiReports?.metrics?.infra_error,
                   )}
+                  {stop && <span className="mt-1 block">{stop}</span>}
                 </AlertDescription>
               </Alert>
             ))}

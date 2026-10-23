@@ -162,4 +162,6 @@ export const POLICY_WARNING_LABEL: Record<string, string> = {
     '한 번의 장애로 이번 달 에러 버짓의 20% 이상을 썼어요.',
   chaos_latency_degraded:
     '장애 구간 응답 시간이 평소의 10배를 넘었어요. 복구는 했어요.',
+  chaos_partial_execution:
+    '요청한 장애 시나리오 중 일부를 샌드박스 문제로 돌리지 못했어요. 판정은 돌린 시나리오만으로 냈고, 빠진 시나리오와 이유는 판정 사유에 적었어요.',
 }
