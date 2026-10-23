@@ -101,3 +101,15 @@ export const modeInfo = (mode: string | null | undefined) =>
 // 알 수 없는 모드(샌드박스에 새로 생긴 것)도 값 그대로 보여준다.
 export const modeLabel = (mode: string | null | undefined) =>
   mode ? (modeInfo(mode)?.label ?? mode) : DEFAULT_MODE_LABEL
+
+// 판정 불가일 때 샌드박스가 밝힌 멈춘 곳(metrics.stopped_at)을 문장으로.
+// 값은 deploy | smoke | scenario:<chaosMode>. 모르는 값은 그대로 보여준다.
+export function describeStop(stoppedAt: unknown, reason: unknown): string | null {
+  if (typeof stoppedAt !== 'string' || !stoppedAt) return null
+  let where = stoppedAt
+  if (stoppedAt === 'deploy') where = '레포 배포 단계(clone·빌드·기동)'
+  else if (stoppedAt === 'smoke') where = '기동 확인 단계'
+  else if (stoppedAt.startsWith('scenario:')) where = `장애 시나리오 '${modeLabel(stoppedAt.slice(9))}'`
+  const detail = typeof reason === 'string' && reason ? ` 마지막 오류: ${reason}` : ''
+  return `${where}에서 멈췄어요.${detail}`
+}
