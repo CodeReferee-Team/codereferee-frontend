@@ -20,6 +20,7 @@ export const REASON_CATEGORIES = [
   'sandbox_not_executed',
   'test_failure',
   'no_tests_detected',
+  'service_not_deployable',
   'dependency_install_failed',
   'docker_build_failed',
   // runtime
@@ -65,6 +66,8 @@ export const REASON_LABEL: Record<string, string> = {
   test_failure: '레포의 테스트가 실패했어요.',
   no_tests_detected:
     '테스트가 없어서 통과 여부를 확인할 수 없었어요. 실패가 아니라 검증 불가예요.',
+  service_not_deployable:
+    '배포할 HTTP 서비스를 정하지 못해 장애를 걸 대상이 없었어요. 라이브러리라면 정상이고, 서비스라면 .codereferee/validation.yaml에 선언해 주세요.',
   dependency_install_failed: '의존성 설치가 실패해서 빌드까지 가지 못했어요.',
   docker_build_failed: 'Docker 이미지 빌드가 실패했어요.',
   service_smoke_failed: '서비스를 띄운 뒤 스모크 테스트에 응답하지 않았어요.',
@@ -123,6 +126,7 @@ export const REASON_KIND: Record<string, 'defect' | 'unverifiable' | 'infrastruc
   sandbox_not_executed: 'infrastructure',
   test_failure: 'defect',
   no_tests_detected: 'unverifiable',
+  service_not_deployable: 'unverifiable',
   // 애매하다. lockfile·사설 의존성(레포 쪽)과 레지스트리·네트워크 장애(우리 쪽)가
   // 구분되지 않는다. 결함으로 단정하면 우리 장애를 레포 탓으로 돌린다.
   dependency_install_failed: 'unverifiable',
@@ -160,6 +164,8 @@ export const POLICY_WARNING_LABEL: Record<string, string> = {
     '대상이 1대뿐이에요. 그 1대를 멈추면 잠시 끊기는 게 정상이라 결함으로 보지 않았어요.',
   chaos_error_budget_significant_burn:
     '한 번의 장애로 이번 달 에러 버짓의 20% 이상을 썼어요.',
+  chaos_recovery_slower_than_expected:
+    '교체된 Pod가 설정에서 기대한 시간보다 늦게 준비됐어요. 판정은 실제 끊긴 시간으로 냈어요.',
   chaos_latency_degraded:
     '장애 구간 응답 시간이 평소의 10배를 넘었어요. 복구는 했어요.',
   chaos_partial_execution:
