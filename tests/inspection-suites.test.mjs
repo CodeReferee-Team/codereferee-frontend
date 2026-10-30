@@ -59,3 +59,12 @@ test('load results are found inside a suite and summarised in one sentence', asy
     + ' 응답 시간(p95)은 10명일 때 53ms에서 200명일 때 351ms로 6.6배가 됐어요.'
     + ' 넘친 요청은 바로 거절했어요(503·429). 사용자를 붙잡아 두지 않는 건 좋은 신호예요.')
 })
+
+test('the requester\'s expected users are named in the load sentence', async () => {
+  const { describeLoad } = await import('../.runtime/testbuild/chaos.js')
+  const load = { stages: [{ users: 10, error_rate: 0 }, { users: 150, error_rate: 0.05 }],
+    max_users_without_errors: 10, first_users_with_errors: 150, target_users: 150, target_met: false }
+  assert.ok(describeLoad(load).endsWith(' 예상하신 150명을 버티지 못했어요.'))
+  assert.ok(describeLoad({ ...load, target_met: null }).indexOf('예상하신') === -1)
+})
+

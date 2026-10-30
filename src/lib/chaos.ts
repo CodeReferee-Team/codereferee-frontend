@@ -137,6 +137,8 @@ export interface LoadResult {
   latency_growth?: { from_users: number, from_p95_ms: number, to_users: number, to_p95_ms: number,
     ratio: number | null } | null
   overload_behavior?: { users: number, kind: string | null } | null
+  target_users?: number | null
+  target_met?: boolean | null
 }
 
 // 첫 실패 단계가 어떻게 무너졌는지. 고칠 곳이 다르다.
@@ -176,6 +178,11 @@ export function describeLoad(load: LoadResult): string {
   if (growth?.ratio != null) {
     sentence += ` 응답 시간(p95)은 ${growth.from_users}명일 때 ${Math.round(growth.from_p95_ms)}ms에서 `
       + `${growth.to_users}명일 때 ${Math.round(growth.to_p95_ms)}ms로 ${growth.ratio}배가 됐어요.`
+  }
+  if (load.target_users && load.target_met != null) {
+    sentence += load.target_met
+      ? ` 예상하신 ${load.target_users}명까지 모두 답했어요.`
+      : ` 예상하신 ${load.target_users}명을 버티지 못했어요.`
   }
   const kind = load.overload_behavior?.kind
   if (kind && OVERLOAD_SENTENCE[kind]) sentence += ' ' + OVERLOAD_SENTENCE[kind]
