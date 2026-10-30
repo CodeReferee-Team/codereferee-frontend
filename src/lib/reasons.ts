@@ -170,4 +170,8 @@ export const POLICY_WARNING_LABEL: Record<string, string> = {
     '장애 구간 응답 시간이 평소의 10배를 넘었어요. 복구는 했어요.',
   chaos_partial_execution:
     '요청한 장애 시나리오 중 일부를 샌드박스 문제로 돌리지 못했어요. 판정은 돌린 시나리오만으로 냈고, 빠진 시나리오와 이유는 판정 사유에 적었어요.',
+  load_errors_under_concurrency:
+    '동시 사용자가 늘자 실패한 요청이 나왔어요. 몇 명부터인지는 동시 사용자 부하 표에 있어요.',
+  load_restarted_under_concurrency:
+    '부하를 받는 동안 앱 컨테이너가 재시작했어요. 메모리 한도나 헬스체크 시간을 확인해 보세요.',
 }

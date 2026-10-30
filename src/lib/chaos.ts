@@ -14,9 +14,11 @@ export const CHAOS_MODES: readonly ChaosModeInfo[] = [
   { value: 'suite_quick', label: '빠른 검사', needsProfile: true,
     description: 'Container Kill로 컨테이너 재시작과 복구를 확인해요.' },
   { value: 'suite_standard', label: '중간 검사', needsProfile: true,
-    description: 'Container Kill, CPU 부하, 네트워크 지연을 순서대로 검사해요.' },
+    description: '동시 사용자 10·50·100·200명 부하를 먼저 걸어 몇 명까지 버티는지 재고, 이어서 Container Kill, CPU 부하, 네트워크 지연을 검사해요.' },
   { value: 'suite_deep', label: '정밀 검사', needsProfile: true,
-    description: '등록된 8개 장애 시나리오를 순서대로 검사해요. 빌드와 복구에 따라 수 분 이상 걸릴 수 있어요.' },
+    description: '동시 사용자 부하와 등록된 8개 장애 시나리오를 순서대로 검사해요. 빌드와 복구에 따라 수 분 이상 걸릴 수 있어요.' },
+  { value: 'load_concurrent_users', label: '동시 사용자 부하', needsProfile: true,
+    description: '동시 사용자를 10·50·100·200명으로 늘려 가며 요청을 보내고, 실패 없이 답한 최대 인원과 응답 시간을 재요.' },
   { value: 'litmus_container_kill', label: 'Container Kill', needsProfile: true,
     description: '컨테이너 프로세스를 종료하고 같은 Pod 안에서 재시작되는지 확인해요.' },
   { value: 'litmus_pod_cpu_hog', label: 'CPU Stress', needsProfile: true,
@@ -61,8 +63,9 @@ export const CHAOS_MODES: readonly ChaosModeInfo[] = [
 
 export const SUITES: Record<string, readonly string[]> = {
   suite_quick: ['litmus_container_kill'],
-  suite_standard: ['litmus_container_kill', 'litmus_pod_cpu_hog', 'litmus_pod_network_latency'],
-  suite_deep: ['litmus_container_kill', 'litmus_pod_delete', 'litmus_pod_cpu_hog',
+  suite_standard: ['load_concurrent_users', 'litmus_container_kill', 'litmus_pod_cpu_hog',
+    'litmus_pod_network_latency'],
+  suite_deep: ['load_concurrent_users', 'litmus_container_kill', 'litmus_pod_delete', 'litmus_pod_cpu_hog',
     'litmus_pod_network_latency', 'litmus_pod_network_loss', 'service_selector_blackhole',
     'deployment_scale_down', 'rollout_restart'],
 }
@@ -72,6 +75,8 @@ const ALIASES: Record<string, string> = {
   service_selector_blackhole: 'route', deployment_scale_down: 'scale', rollout_restart: 'roll',
   dependency_database_outage: 'db', dependency_redis_outage: 'redis',
   litmus_pod_memory_hog: 'mem', litmus_pod_memory_oom: 'oom',
+  // v1 비트마스크는 이 순서를 쓴다. 새 시나리오는 끝에만 붙인다(샌드박스 CUSTOM_V1과 같은 순서).
+  load_concurrent_users: 'load',
 }
 
 export function inspectionMode(mode: string, extras: readonly string[]): string {
@@ -112,4 +117,47 @@ export function describeStop(stoppedAt: unknown, reason: unknown): string | null
   else if (stoppedAt.startsWith('scenario:')) where = `장애 시나리오 '${modeLabel(stoppedAt.slice(9))}'`
   const detail = typeof reason === 'string' && reason ? ` 마지막 오류: ${reason}` : ''
   return `${where}에서 멈췄어요.${detail}`
+}
+
+// 동시 사용자 부하 결과. 단독 실행이면 chaos_observation.load, 묶음이면 scenarios[].chaos_observation.load.
+// 출처: codereferee-sandbox scripts/run_load_experiment.py
+export interface LoadStage {
+  users: number
+  requests?: number
+  failed_requests?: number
+  error_rate?: number
+  throughput_rps?: number
+  p95_latency_ms?: number | null
+}
+
+export interface LoadResult {
+  stages: LoadStage[]
+  max_users_without_errors?: number | null
+  first_users_with_errors?: number | null
+}
+
+const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
+
+export function findLoad(observation: unknown): LoadResult | null {
+  if (!isObject(observation)) return null
+  const candidates = [observation.load, ...(Array.isArray(observation.scenarios)
+    ? observation.scenarios.map((s) => isObject(s) && isObject(s.chaos_observation) ? s.chaos_observation.load : null)
+    : [])]
+  const load = candidates.find((c) => isObject(c) && Array.isArray(c.stages))
+  return load ? load as unknown as LoadResult : null
+}
+
+// 판정과 같은 근거로 한 문장. 몇 명을 버텨야 하는지는 서비스마다 달라 합격 기준으로 쓰지 않는다.
+export function describeLoad(load: LoadResult): string {
+  const ok = load.max_users_without_errors
+  const first = load.first_users_with_errors
+  if (first == null) {
+    const top = load.stages.at(-1)?.users
+    return top ? `동시 사용자 ${top}명까지 모든 요청에 답했어요.` : '부하 단계가 실행되지 않았어요.'
+  }
+  const stage = load.stages.find((s) => s.users === first)
+  const rate = stage?.error_rate != null ? ` 요청의 ${(stage.error_rate * 100).toFixed(1)}%가 실패했어요.` : ''
+  return ok
+    ? `동시 사용자 ${ok}명까지는 모두 답했고, ${first}명에서${rate || ' 실패가 나기 시작했어요.'}`
+    : `동시 사용자 ${first}명부터 실패가 났어요.${rate}`
 }
