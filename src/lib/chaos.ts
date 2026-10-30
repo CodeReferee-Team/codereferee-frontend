@@ -134,6 +134,16 @@ export interface LoadResult {
   stages: LoadStage[]
   max_users_without_errors?: number | null
   first_users_with_errors?: number | null
+  latency_growth?: { from_users: number, from_p95_ms: number, to_users: number, to_p95_ms: number,
+    ratio: number | null } | null
+  overload_behavior?: { users: number, kind: string | null } | null
+}
+
+// 첫 실패 단계가 어떻게 무너졌는지. 고칠 곳이 다르다.
+const OVERLOAD_SENTENCE: Record<string, string> = {
+  rejected: '넘친 요청은 바로 거절했어요(503·429). 사용자를 붙잡아 두지 않는 건 좋은 신호예요.',
+  timed_out: '넘친 요청을 붙잡고 있다가 시간 초과로 끝냈어요. 사용자가 기다리다 실패하는 모양이에요.',
+  connection_failed: '넘치자 연결 자체를 받지 못했어요.',
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
@@ -151,13 +161,23 @@ export function findLoad(observation: unknown): LoadResult | null {
 export function describeLoad(load: LoadResult): string {
   const ok = load.max_users_without_errors
   const first = load.first_users_with_errors
+  let sentence: string
   if (first == null) {
     const top = load.stages.at(-1)?.users
-    return top ? `동시 사용자 ${top}명까지 모든 요청에 답했어요.` : '부하 단계가 실행되지 않았어요.'
+    sentence = top ? `동시 사용자 ${top}명까지 모든 요청에 답했어요.` : '부하 단계가 실행되지 않았어요.'
+  } else {
+    const stage = load.stages.find((s) => s.users === first)
+    const rate = stage?.error_rate != null ? ` 요청의 ${(stage.error_rate * 100).toFixed(1)}%가 실패했어요.` : ''
+    sentence = ok
+      ? `동시 사용자 ${ok}명까지는 모두 답했고, ${first}명에서${rate || ' 실패가 나기 시작했어요.'}`
+      : `동시 사용자 ${first}명부터 실패가 났어요.${rate}`
   }
-  const stage = load.stages.find((s) => s.users === first)
-  const rate = stage?.error_rate != null ? ` 요청의 ${(stage.error_rate * 100).toFixed(1)}%가 실패했어요.` : ''
-  return ok
-    ? `동시 사용자 ${ok}명까지는 모두 답했고, ${first}명에서${rate || ' 실패가 나기 시작했어요.'}`
-    : `동시 사용자 ${first}명부터 실패가 났어요.${rate}`
+  const growth = load.latency_growth
+  if (growth?.ratio != null) {
+    sentence += ` 응답 시간(p95)은 ${growth.from_users}명일 때 ${Math.round(growth.from_p95_ms)}ms에서 `
+      + `${growth.to_users}명일 때 ${Math.round(growth.to_p95_ms)}ms로 ${growth.ratio}배가 됐어요.`
+  }
+  const kind = load.overload_behavior?.kind
+  if (kind && OVERLOAD_SENTENCE[kind]) sentence += ' ' + OVERLOAD_SENTENCE[kind]
+  return sentence
 }

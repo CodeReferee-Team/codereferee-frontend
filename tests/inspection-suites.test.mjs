@@ -53,4 +53,9 @@ test('load results are found inside a suite and summarised in one sentence', asy
   assert.equal(describeLoad(load), '동시 사용자 100명까지는 모두 답했고, 200명에서 요청의 19.4%가 실패했어요.')
   assert.equal(describeLoad({ ...load, max_users_without_errors: null, first_users_with_errors: null }),
     '동시 사용자 200명까지 모든 요청에 답했어요.')
+  const measured = { ...load, latency_growth: { from_users: 10, from_p95_ms: 53, to_users: 200, to_p95_ms: 351, ratio: 6.6 },
+    overload_behavior: { users: 200, kind: 'rejected' } }
+  assert.equal(describeLoad(measured), '동시 사용자 100명까지는 모두 답했고, 200명에서 요청의 19.4%가 실패했어요.'
+    + ' 응답 시간(p95)은 10명일 때 53ms에서 200명일 때 351ms로 6.6배가 됐어요.'
+    + ' 넘친 요청은 바로 거절했어요(503·429). 사용자를 붙잡아 두지 않는 건 좋은 신호예요.')
 })
