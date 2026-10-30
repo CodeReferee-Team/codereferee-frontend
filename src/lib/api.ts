@@ -182,6 +182,8 @@ export interface SubmitValidationRequest {
   deployment_profile?: string
   // 입력하면 검증이 끝났을 때 서버가 이 주소로 PDF 리포트를 보낸다. 비우면 보내지 않는다.
   email?: string
+  // 예상 동시 사용자 수(1~500). 적으면 그 인원에서 실패할 때 Fail이 된다. 비우면 측정값만 나온다.
+  target_users?: number
 }
 
 export class ApiError extends Error {

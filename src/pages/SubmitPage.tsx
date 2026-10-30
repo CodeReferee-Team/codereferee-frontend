@@ -36,6 +36,7 @@ export default function SubmitPage() {
   const [chaosMode, setChaosMode] = useState('')
   const [profile, setProfile] = useState('')
   const [email, setEmail] = useState('')
+  const [targetUsers, setTargetUsers] = useState('')
   const [extras, setExtras] = useState<string[]>([])
 
   const selectedMode = modeInfo(chaosMode)
@@ -43,6 +44,10 @@ export default function SubmitPage() {
   const profileValue = profile.trim()
   // 프로필을 비워도 된다. 샌드박스가 레포의 .codereferee/validation.yaml에서 읽거나
   // Dockerfile로 자동 감지한다. 값을 넣었을 때만 형식을 검사한다(오타 조기 차단).
+  const targetUsersValue = targetUsers.trim() === '' ? undefined : Number(targetUsers)
+  const targetUsersInvalid =
+    targetUsersValue !== undefined && !(Number.isInteger(targetUsersValue) && targetUsersValue >= 1 && targetUsersValue <= 500)
+  const runsLoad = (SUITES[chaosMode] ?? [chaosMode]).concat(extras).includes('load_concurrent_users')
   const profileInvalid =
     needsProfile &&
     profileValue !== '' &&
@@ -60,6 +65,7 @@ export default function SubmitPage() {
         // 레포 설정(.codereferee/validation.yaml)이나 Dockerfile로 자동 해소한다.
         deployment_profile: needsProfile && profileValue ? profileValue : undefined,
         email: email.trim() || undefined,
+        target_users: runsLoad ? targetUsersValue : undefined,
       },
       { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
     )
@@ -159,6 +165,27 @@ export default function SubmitPage() {
                 </div>
               )}
 
+              {runsLoad && (
+                <div className="space-y-2">
+                  <Label htmlFor="target-users">예상 동시 사용자 수 (선택)</Label>
+                  <Input
+                    id="target-users"
+                    type="number"
+                    min={1}
+                    max={500}
+                    inputMode="numeric"
+                    className={cn(targetUsersInvalid && 'border-destructive')}
+                    placeholder="예: 100"
+                    value={targetUsers}
+                    onChange={(e) => setTargetUsers(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    적으면 그 인원을 꼭 재고, 그 인원에서 요청이 실패하면 불합격으로 판정한 뒤 고친 수정안을 같은
+                    부하로 다시 검증해요. 비우면 몇 명까지 버티는지만 알려 드려요. 1~500명.
+                  </p>
+                </div>
+              )}
+
               {needsProfile && (
                 <div className="space-y-2">
                   <Label htmlFor="profile">배포 프로필 (선택)</Label>
@@ -208,7 +235,7 @@ export default function SubmitPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={submit.isPending || profileInvalid}
+              disabled={submit.isPending || profileInvalid || (runsLoad && targetUsersInvalid)}
             >
               {submit.isPending ? '제출 중…' : '검증 시작'}
             </Button>

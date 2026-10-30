@@ -42,6 +42,8 @@ export const REASON_CATEGORIES = [
   'chaos_error_budget_exhausted',
   'chaos_recovery_exceeds_expected_bound',
   'chaos_recovered_within_budget',
+  // load (예상 동시 사용자 수를 적었을 때만)
+  'load_target_not_met',
   // pass
   'all_checks_passed',
 ] as const
@@ -91,6 +93,8 @@ export const REASON_LABEL: Record<string, string> = {
   chaos_recovery_exceeds_expected_bound:
     '복구 시간이 워크로드 설정에서 계산한 기대 상한을 넘었어요.',
   chaos_recovered_within_budget: '장애를 주입했고 에러 버짓 안에서 복구했어요.',
+  load_target_not_met:
+    '적어 주신 예상 동시 사용자 수에서 실패한 요청이 있었어요. 같은 부하로 다시 검증한 수정안이 있으면 아래에 붙였어요.',
   all_checks_passed: '모든 검사를 통과했어요.',
   // judge-policy 6.2에는 있지만 schemas.py REASON_CATEGORIES에는 아직 없는 코드.
   // 추가되는 날 화면이 "코드 결함"으로 오역하지 않도록 먼저 넣어 둔다.
@@ -150,6 +154,7 @@ export const REASON_KIND: Record<string, 'defect' | 'unverifiable' | 'infrastruc
   chaos_not_recovered: 'defect',
   chaos_error_budget_exhausted: 'defect',
   chaos_recovery_exceeds_expected_bound: 'defect',
+  load_target_not_met: 'defect',
   // 같은 6.2에서 Error로 분류한다. 증거가 없으면 대상 시스템 결함이 아니다.
   chaos_evidence_missing: 'infrastructure',
 }
@@ -170,4 +175,8 @@ export const POLICY_WARNING_LABEL: Record<string, string> = {
     '장애 구간 응답 시간이 평소의 10배를 넘었어요. 복구는 했어요.',
   chaos_partial_execution:
     '요청한 장애 시나리오 중 일부를 샌드박스 문제로 돌리지 못했어요. 판정은 돌린 시나리오만으로 냈고, 빠진 시나리오와 이유는 판정 사유에 적었어요.',
+  load_errors_under_concurrency:
+    '동시 사용자가 늘자 실패한 요청이 나왔어요. 몇 명부터인지는 동시 사용자 부하 표에 있어요.',
+  load_restarted_under_concurrency:
+    '부하를 받는 동안 앱 컨테이너가 재시작했어요. 메모리 한도나 헬스체크 시간을 확인해 보세요.',
 }

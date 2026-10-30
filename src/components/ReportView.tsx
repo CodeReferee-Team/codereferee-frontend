@@ -14,6 +14,7 @@ import {
   type AiReports,
   type ChaosObservation,
 } from '@/lib/api'
+import { describeLoad, findLoad, type LoadResult } from '@/lib/chaos'
 import { POLICY_WARNING_LABEL } from '@/lib/reasons'
 
 function EvidenceList({ items }: { items?: string[] }) {
@@ -77,6 +78,47 @@ const CHAOS_TYPE_LABEL: Record<string, string> = {
   deployment_scale_down: '배포 스케일 다운',
   service_selector_blackhole: 'Service 라우팅 단절',
   rollout_restart: '롤아웃 재시작',
+  load_concurrent_users: '동시 사용자 부하',
+}
+
+const percent = (v: number | undefined) => (v == null ? '-' : `${(v * 100).toFixed(1)}%`)
+const number = (v: number | null | undefined, digits = 0) => (v == null ? '-' : v.toFixed(digits))
+
+// 단계별 부하 결과. 합격 기준이 아니라 "몇 명까지 버티는가"를 보여주는 측정값이다.
+function LoadTable({ load }: { load: LoadResult }) {
+  return (
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium">동시 사용자 부하</h3>
+      <p className="text-sm">{describeLoad(load)}</p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-left text-muted-foreground">
+            <tr>
+              <th className="py-1 pr-3 font-normal">동시 사용자</th>
+              <th className="py-1 pr-3 font-normal">요청</th>
+              <th className="py-1 pr-3 font-normal">실패율</th>
+              <th className="py-1 pr-3 font-normal">처리량(건/초)</th>
+              <th className="py-1 font-normal">p95(ms)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {load.stages.map((stage) => (
+              <tr key={stage.users} className={stage.failed_requests ? 'text-destructive' : undefined}>
+                <td className="py-1 pr-3">{stage.users}명</td>
+                <td className="py-1 pr-3">{number(stage.requests)}</td>
+                <td className="py-1 pr-3">{percent(stage.error_rate)}</td>
+                <td className="py-1 pr-3">{number(stage.throughput_rps, 1)}</td>
+                <td className="py-1">{number(stage.p95_latency_ms)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        사용자 한 명이 1초에 한 번 요청해요. 5초 안에 답이 없거나 5xx·429면 실패로 셌어요.
+      </p>
+    </div>
+  )
 }
 
 // 요약에 따로 보여주는 키. 나머지 스칼라는 "그 밖의 관측값"으로 이어서 보여준다.
@@ -98,6 +140,7 @@ function ChaosObservationCard({ observation: o }: { observation: ChaosObservatio
     ([k, v]) => !CHAOS_SUMMARY_KEYS.has(k) && (v === null || typeof v !== 'object'),
   )
   const target = [o.target_kind, o.target_name].filter(Boolean).join(' / ')
+  const load = findLoad(o)
 
   return (
     <Card>
@@ -132,6 +175,7 @@ function ChaosObservationCard({ observation: o }: { observation: ChaosObservatio
             </Field>
           ))}
         </dl>
+        {load && <LoadTable load={load} />}
         {scenarios.length > 0 && (
           <div className="space-y-2">
             <h3 className="text-sm font-medium">시나리오별 실행 결과</h3>
