@@ -1,35 +1,29 @@
-# React + TypeScript + Vite
+# codereferee-frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+CodeReferee의 웹 화면입니다. GitHub 레포가 사용자가 늘고 장애가 나도 버티는지 검사를 요청하고, 진행 상황과 결과 리포트를 봅니다. Vercel에 배포되어 있고, 모든 요청은 BE(`codereferee-server`)의 `/api`로 갑니다.
 
-Currently, two official plugins are available:
+## 화면
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| 경로 | 화면 |
+| --- | --- |
+| `/` | 검증 요청. 레포 URL, 브랜치, 검사 종류, 예상 동시 사용자 수, 알림 이메일을 받습니다 |
+| `/validations/:requestId` | 진행 단계, 판정(통과·실패·판정 불가), 부하·장애 관측 결과, 경고, 검증된 수정안 |
 
-## React Compiler
+- **검사 종류**: 빠른 검사(`suite_quick`), 중간 검사(`suite_standard`), 정밀 검사(`suite_deep`)를 고르거나 시나리오를 직접 골라 묶을 수 있습니다. 목록은 `src/lib/chaos.ts`에 있고, 샌드박스에 시나리오가 추가되면 이 파일만 고치면 됩니다.
+- **예상 동시 사용자 수**: 선택 입력(1~500)입니다. 넣으면 부하 시나리오가 그 인원에서 버티는지 재고, 버티지 못하면 실패로 판정합니다. 비우면 실패 대신 경고로만 알려줍니다.
+- **판정 문구**: 판정 사유와 경고 코드를 사람이 읽는 문장으로 바꾸는 표는 `src/lib/reasons.ts`에 있습니다.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 개발
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev     # vite dev 서버. /api는 vite.config.ts의 프록시로 BE에 붙습니다
+npm run build
+npm run lint    # oxlint
+npm test        # 검사 묶음 구성 테스트 (tests/*.test.mjs)
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+React 19 + TypeScript + Vite, Tailwind CSS, TanStack Query를 씁니다.
 
 ## 백엔드 연결 (vercel.json)
 
