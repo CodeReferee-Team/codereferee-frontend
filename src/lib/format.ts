@@ -28,6 +28,10 @@ const INFRA_ERROR_MESSAGE: Record<string, string> = {
     '샌드박스에서 결과를 관측하지 못했어요. 코드 문제가 아니라 실행 환경 문제예요.',
   sandbox_process_failed:
     '샌드박스 실험 프로세스가 비정상 종료했어요. 코드 문제가 아니라 실행 환경 문제예요.',
+  sandbox_disk_low:
+    '샌드박스 서버의 디스크가 모자라 빌드를 시작하지 않았어요. 코드 문제가 아니에요. 정리한 뒤 다시 시도해 주세요.',
+  sandbox_cpu_insufficient:
+    '샌드박스 서버의 CPU가 모자라 예상 사용자 수를 공정하게 잴 수 없었어요. 앱이 아니라 검사 환경의 한계라 판정하지 않았어요.',
 }
 
 const GENERIC_ERROR =
