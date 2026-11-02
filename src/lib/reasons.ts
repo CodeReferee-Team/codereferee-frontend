@@ -179,4 +179,6 @@ export const POLICY_WARNING_LABEL: Record<string, string> = {
     '동시 사용자가 늘자 실패한 요청이 나왔어요. 몇 명부터인지는 동시 사용자 부하 표에 있어요.',
   load_restarted_under_concurrency:
     '부하를 받는 동안 앱 컨테이너가 재시작했어요. 메모리 한도나 헬스체크 시간을 확인해 보세요.',
+  load_slow_under_concurrency:
+    '동시 사용자가 늘자 20번 중 1번은 응답에 1초 넘게 걸렸어요. 사람들은 1초가 넘으면 기다린다고 느껴요. 몇 명부터인지는 동시 사용자 부하 표에 있어요.',
 }
