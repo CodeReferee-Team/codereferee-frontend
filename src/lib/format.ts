@@ -8,11 +8,32 @@ export function formatDuration(ms: number): string | null {
   return s === 0 ? `${m}분` : `${m}분 ${s}초`
 }
 
-// 서버의 LocalDateTime은 "2026-10-06T07:56:17.969295175"처럼 나노초 9자리, 타임존 없음.
-// JS Date는 소수 3자리까지만 보장하고(브라우저에 따라 그 이상은 Invalid Date) 타임존 없는 값은 브라우저 로컬로 해석한다.
-// 그래서 밀리초로 자른 뒤 파싱하고, 두 값에 같은 방식을 쓰는 차이 계산에만 믿고 쓴다.
-export const parseServerTime = (value: string) =>
-  new Date(value.replace(/(\.\d{3})\d+$/, '$1'))
+// 서버의 LocalDateTime은 "2026-10-06T07:56:17.969295175"처럼 나노초 9자리에 타임존 표시가 없다.
+// 서버가 시간대를 따로 설정하지 않은 컨테이너(Docker, EC2)에서 돌아서 값은 UTC 기준이다.
+// 표시 없이 그냥 Date에 넣으면 브라우저 로컬 시각으로 읽어서, UTC 숫자가 내 시각처럼 보인다
+// (한국이면 9시간 어긋난다). 그래서 표시가 없으면 UTC로 간주한다.
+// 나중에 서버가 Z나 +09:00 같은 오프셋을 붙여 보내면 그 값을 그대로 존중한다.
+// JS Date는 소수 3자리까지만 보장해서 밀리초로 자른 뒤 파싱한다.
+const HAS_OFFSET = /(Z|[+-]\d{2}:?\d{2})$/i
+export const parseServerTime = (value: string) => {
+  const trimmed = value.replace(/(\.\d{3})\d+/, '$1')
+  return new Date(HAS_OFFSET.test(trimmed) ? trimmed : `${trimmed}Z`)
+}
+
+// 화면에 보여줄 시각. 시간대는 접속한 브라우저의 설정(OS 시간대)을 따르므로
+// 서울에서 열면 서울 시각, 도쿄에서 열면 도쿄 시각이 된다. 위치 정보를 따로 묻지 않는다.
+// 어느 시간대 기준인지 헷갈리지 않게 GMT+9 같은 표시를 붙인다. 읽지 못하면 원문을 그대로 돌려준다.
+export function formatServerTime(value: string): string {
+  const d = parseServerTime(value)
+  if (Number.isNaN(d.getTime())) return value
+  // 날짜와 시각은 기존 화면과 같은 기본 형식으로 두고, 시간대 이름(GMT+9)만 덧붙인다.
+  // dateStyle/timeStyle은 timeZoneName과 같이 쓰면 TypeError라서 따로 구한다.
+  const zone = new Intl.DateTimeFormat('ko-KR', { timeZoneName: 'short' })
+    .formatToParts(d)
+    .find((p) => p.type === 'timeZoneName')?.value
+  const text = d.toLocaleString('ko-KR')
+  return zone ? `${text} ${zone}` : text
+}
 
 // 접수부터 마지막 갱신까지 (서버 TaskStatus.elapsed()와 같은 정의).
 // 현재 시각(브라우저)과는 섞지 않는다. 시간대가 다르면 틀리기 때문이다.
