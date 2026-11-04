@@ -14,7 +14,7 @@ import {
   elapsedMs,
   failureReason,
   formatDuration,
-  parseServerTime,
+  formatServerTime,
 } from '@/lib/format'
 import { useValidation } from '@/lib/queries'
 import { REASON_LABEL } from '@/lib/reasons'
@@ -120,7 +120,7 @@ export default function ValidationPage() {
                 )}
               </dl>
               <p className="font-mono text-xs text-muted-foreground">
-                {data.taskId} · 갱신 {parseServerTime(data.updatedAt).toLocaleString()}
+                {data.taskId} · 갱신 {formatServerTime(data.updatedAt)}
                 {!isTerminal(data.currentAgent) && ' · 2초마다 갱신 중'}
               </p>
             </CardContent>
