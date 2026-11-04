@@ -18,12 +18,15 @@ import {
 } from '@/lib/format'
 import { useValidation } from '@/lib/queries'
 import { REASON_LABEL } from '@/lib/reasons'
+import { stepHintOverride } from '@/lib/stepper'
 import { CHAOS_SKIPPED_HINT, STEP_HINT } from '@/lib/steps'
 
 export default function ValidationPage() {
   const { requestId = '' } = useParams()
   const { data, error, isPending } = useValidation(requestId)
   const chaosRan = chaosObserved(data?.aiReports)
+  // 장애 주입 옵션을 넣어 제출했는가. 그러면 샌드박스 안에서 빌드와 장애 주입이 한 번에 진행된다.
+  const chaosRequested = !!data?.chaosOptions?.mode
   const failure = data ? failureReason(data.errorMessage) : null
   // 종결된 요청만 소요 시간을 보여준다. 옛 레코드는 createdAt이 없어 표시하지 않는다.
   const elapsed =
@@ -81,18 +84,20 @@ export default function ValidationPage() {
                     {data.commitSha && ` @ ${data.commitSha.slice(0, 8)}`}
                   </p>
                 </div>
-                <StatusBadge step={data.currentAgent} />
+                <StatusBadge step={data.currentAgent} chaosRequested={chaosRequested} />
               </div>
 
               <PipelineProgress
                 current={data.currentAgent}
                 iterationCount={data.iterationCount}
+                chaosRequested={chaosRequested}
                 chaosObserved={chaosRan}
               />
 
               <p className="text-sm text-muted-foreground">
                 {(reasonCategory && REASON_LABEL[reasonCategory]) ||
                   (infra && REASON_LABEL[infra]) ||
+                  stepHintOverride(data.currentAgent, chaosRequested) ||
                   STEP_HINT[data.currentAgent]}
               </p>
               {isTerminal(data.currentAgent) && !chaosRan && (
