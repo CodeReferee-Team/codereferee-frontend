@@ -427,6 +427,13 @@ export function ReportView({ reports }: { reports: AiReports }) {
           </CardContent>
         </Card>
       )}
+
+      {healing && <SelfHealingCard data={healing} />}
+
+      <ChaosRecoveryPanel reports={reports} />
+      <ResourceChart reports={reports} />
+
+      {/* 판정은 복구와 자원 추이를 먼저 보여준 뒤에 둔다. Critic, Refiner는 판정을 이어받아 바로 뒤에 온다. */}
       {judge_report && (
         <Card>
           <CardHeader>
@@ -460,11 +467,6 @@ export function ReportView({ reports }: { reports: AiReports }) {
           </CardContent>
         </Card>
       )}
-
-      {healing && <SelfHealingCard data={healing} />}
-
-      <ChaosRecoveryPanel reports={reports} />
-      <ResourceChart reports={reports} />
 
       {!isPass && critic_feedback && (
         <Card>
