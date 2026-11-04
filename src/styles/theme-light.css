@@ -1,0 +1,32 @@
+/* 라이트 테마 보정.
+   cockpit.css의 일부 규칙(AI 패치 diff, 이벤트 로그 커서)은 .gs-cockpit 범위 밖이면서
+   진한 배경과 네온 글자색을 직접 써서, 하얀 화면에서는 어색하다. 다크일 때(html.dark)는
+   그대로 두고, 라이트일 때만 GitHub 라이트 팔레트로 바꾼다. cockpit.css 뒤에 불러온다. */
+
+html:not(.dark) .gs-diff {
+  background: #f6f8fa;
+  border-color: #d0d7de;
+}
+html:not(.dark) .gs-diff-file {
+  color: #57606a;
+  background: #eaeef2;
+  border-bottom-color: #d0d7de;
+}
+html:not(.dark) .gs-diff-add {
+  background: #dafbe1;
+  color: #116329;
+}
+html:not(.dark) .gs-diff-del {
+  background: #ffebe9;
+  color: #a40e26;
+}
+html:not(.dark) .gs-diff-ctx {
+  color: #24292f;
+}
+html:not(.dark) .gs-diff-hunk {
+  background: #fbefff;
+  color: #6639ba;
+}
+html:not(.dark) .gs-log-cursor {
+  color: #0969da;
+}
