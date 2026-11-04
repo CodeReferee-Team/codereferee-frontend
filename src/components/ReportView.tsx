@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ChaosRecoveryPanel } from '@/components/ChaosRecoveryPanel'
+import { ResourceChart } from '@/components/ResourceChart'
 import {
   Card,
   CardContent,
@@ -289,6 +290,7 @@ export function ReportView({ reports }: { reports: AiReports }) {
       )}
 
       <ChaosRecoveryPanel reports={reports} />
+      <ResourceChart reports={reports} />
 
       {!isPass && critic_feedback && (
         <Card>
