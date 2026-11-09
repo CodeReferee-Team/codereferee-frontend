@@ -43,6 +43,37 @@ export function elapsedMs(createdAt: string | null, updatedAt: string): number |
   return Number.isNaN(diff) ? null : diff
 }
 
+// 진행 중 경과 시간.
+// 서버 시각(타임존 표시 없음)과 브라우저 시계를 직접 빼면 서버 시간대나 시계 오차만큼 틀린다.
+// 그래서 서버가 알려준 "접수부터 마지막 갱신까지"(두 서버 시각의 차이라 시간대와 무관)를 기준으로 삼고,
+// 그 갱신을 화면이 처음 본 뒤 흐른 시간만 브라우저의 단조 시계(performance.now)로 더한다.
+// 갱신이 오면(진행 단계 전환, AI의 20초 간격 heartbeat) 기준을 다시 잡아 오차가 쌓이지 않는다.
+// 화면을 막 열었을 때는 마지막 갱신 이후 최대 20초 정도 덜 셀 수 있다.
+export interface ElapsedAnchor {
+  baseMs: number // 접수부터 이 갱신까지
+  updatedAt: string // 이 기준이 만들어진 갱신 시각 (같은 값이면 기준을 유지한다)
+  seenAt: number // 화면이 이 갱신을 처음 본 시각 (performance.now 값)
+}
+
+export function nextAnchor(
+  prev: ElapsedAnchor | null,
+  createdAt: string | null,
+  updatedAt: string,
+  nowMs: number,
+): ElapsedAnchor | null {
+  const baseMs = elapsedMs(createdAt, updatedAt)
+  if (baseMs === null || baseMs < 0) return null // 옛 레코드(접수 시각 없음)나 비정상 값
+  if (prev && prev.updatedAt === updatedAt) return prev
+  return { baseMs, updatedAt, seenAt: nowMs }
+}
+
+export const liveElapsedMs = (anchor: ElapsedAnchor, nowMs: number) =>
+  anchor.baseMs + Math.max(0, nowMs - anchor.seenAt)
+
+// 화면에 보여줄 경과 시간은 거꾸로 가지 않는다. 서버 갱신으로 기준을 다시 잡을 때 방금 센 값이
+// 1초쯤 앞서 있으면 그 값을 유지하다가 따라잡게 한다. 진짜로 앞서간 게 아니라 계산 오차 때문이다.
+export const nonDecreasing = (prevShown: number, computed: number) => Math.max(prevShown, computed)
+
 // 샌드박스가 내려주는 오류 코드(aiReports.metrics.infra_error)를 사용자용 문장으로.
 const INFRA_ERROR_MESSAGE: Record<string, string> = {
   sandbox_observation_unavailable:
