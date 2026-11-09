@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router'
 import '@/styles/cockpit.css'
+import { LiveElapsed } from '@/components/LiveElapsed'
 import { PipelineProgress } from '@/components/PipelineProgress'
 import { ReportView } from '@/components/ReportView'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -11,9 +12,7 @@ import { ApiError, chaosObserved, infraError, isTerminal } from '@/lib/api'
 import { describeStop, modeLabel } from '@/lib/chaos'
 import {
   describeError,
-  elapsedMs,
   failureReason,
-  formatDuration,
   formatServerTime,
 } from '@/lib/format'
 import { useValidation } from '@/lib/queries'
@@ -28,14 +27,6 @@ export default function ValidationPage() {
   // 장애 주입 옵션을 넣어 제출했는가. 그러면 샌드박스 안에서 빌드와 장애 주입이 한 번에 진행된다.
   const chaosRequested = !!data?.chaosOptions?.mode
   const failure = data ? failureReason(data.errorMessage) : null
-  // 종결된 요청만 소요 시간을 보여준다. 옛 레코드는 createdAt이 없어 표시하지 않는다.
-  const elapsed =
-    data && isTerminal(data.currentAgent)
-      ? (() => {
-          const ms = elapsedMs(data.createdAt, data.updatedAt)
-          return ms === null ? null : formatDuration(ms)
-        })()
-      : null
   // 사유 코드가 있으면 단계 문구보다 정확하다. 모르는 코드는 단계 문구로 돌아간다.
   const reasonCategory = data?.aiReports?.judge_report?.reason_category
   // ERROR면 Judge를 건너뛰어 judge_report가 비어 있다. 사유는 infra_error에만 있다.
@@ -117,12 +108,12 @@ export default function ValidationPage() {
                     )}
                   </dd>
                 </div>
-                {elapsed && (
-                  <div className="flex gap-1.5">
-                    <dt>소요 시간</dt>
-                    <dd className="text-foreground">{elapsed}</dd>
-                  </div>
-                )}
+                <LiveElapsed
+                  createdAt={data.createdAt}
+                  updatedAt={data.updatedAt}
+                  terminal={isTerminal(data.currentAgent)}
+                  queued={data.currentAgent === 'QUEUED'}
+                />
               </dl>
               <p className="font-mono text-xs text-muted-foreground">
                 {data.taskId} · 갱신 {formatServerTime(data.updatedAt)}
