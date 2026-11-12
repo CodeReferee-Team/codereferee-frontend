@@ -111,7 +111,8 @@ h1.t em{font-style:normal;color:var(--blue)}
 .resultchips{display:flex;flex-direction:column;min-width:330px}
 .resultchips .rr{display:flex;align-items:baseline;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:22px;color:var(--ink2)}
 .resultchips .rr:first-child{border-top:1px solid var(--line)}
-.resultchips .rr b{font-size:24px;font-weight:900;min-width:110px}
+.resultchips .rr b{font-size:24px;font-weight:900;min-width:110px;display:inline-flex;align-items:center;gap:10px}
+.resultchips .rr b:before{content:"";width:12px;height:12px;border-radius:3px;background:currentColor}
 .svc{display:grid;grid-template-columns:1.3fr .9fr 1.25fr;gap:32px;margin-top:56px}
 .svc h4{font-size:26px;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:12px}
 .svc ul{list-style:none;font-size:23px;line-height:1.5;color:var(--ink2)}
@@ -177,9 +178,9 @@ h1.t em{font-style:normal;color:var(--blue)}
 .vcard p{font-size:23px;line-height:1.5;color:var(--ink2);margin-top:20px}
 .vcard p b{color:var(--ink)}
 .vl{margin-top:22px;padding:0;list-style:none}.vl li{font-size:23px;line-height:1.45;color:var(--ink2);padding:10px 0 10px 22px;position:relative;border-top:1px solid var(--line)}.vl li:first-child{border-top:0}.vl li:before{content:"";position:absolute;left:0;top:22px;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5}
-.vcard.pass{border-color:var(--line)}.vcard.pass .badge{color:var(--pass)}
-.vcard.fail{border-color:var(--line)}.vcard.fail .badge{color:var(--fail)}
-.vcard.na{border-color:var(--line)}.vcard.na .badge{color:var(--na)}
+.vcard.pass{border-color:var(--line);border-top:6px solid var(--pass)}.vcard.pass .badge{color:var(--pass)}
+.vcard.fail{border-color:var(--line);border-top:6px solid var(--fail)}.vcard.fail .badge{color:var(--fail)}
+.vcard.na{border-color:var(--line);border-top:6px solid #94a3b8}.vcard.na .badge{color:var(--na)}
 .budget{margin-top:40px;display:grid;grid-template-columns:1.25fr 1fr;gap:32px}
 .btrack{position:relative;height:58px;background:var(--pass-soft);border-radius:14px;margin:26px 0 14px;overflow:hidden}
 .btrack i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--pass);border-radius:14px 0 0 14px;transition:width 1.4s ease}
@@ -653,8 +654,8 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
     <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"ok"</span>}</div>
       <div style="font-size:19px;color:var(--ink3);margin-top:8px">레포 코드에 심은 프롬프트 인젝션 (예시)</div>
       <div class="fooled">
-        <div><b style="color:var(--fail)">2건</b>LLM 판정이 속은 횟수</div>
-        <div><b style="color:var(--ink)">0건</b>규칙 판정은 종료 코드와<br>구조화된 결과만 본다</div>
+        <div style="border-left:6px solid var(--fail)"><b style="color:var(--fail)">2건</b>LLM 판정이 속은 횟수</div>
+        <div style="border-left:6px solid var(--pass)"><b style="color:var(--pass)">0건</b>규칙 판정은 종료 코드와<br>구조화된 결과만 본다</div>
       </div>
     </div>
   </div>
