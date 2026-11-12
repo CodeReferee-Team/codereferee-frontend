@@ -94,7 +94,7 @@ h1.t em{font-style:normal;color:var(--blue)}
 .meter .row .bar{flex:1;height:30px;background:var(--bg);border-radius:8px;overflow:hidden}
 .meter .row .bar i{display:block;height:100%;width:0;border-radius:8px;transition:width 1s ease,background .4s}
 .meter .row em{width:130px;text-align:right;font-style:normal;font-family:var(--mono);font-size:21px;color:var(--ink2)}
-.qmark{position:absolute;left:0;right:0;text-align:center;bottom:30px;font-size:120px;font-weight:900;color:var(--fail);opacity:0;transform:scale(.6);transition:all .5s cubic-bezier(.3,1.6,.5,1)}
+.qmark{position:absolute;left:0;right:0;text-align:center;bottom:55px;line-height:1;font-size:120px;font-weight:900;color:var(--fail);opacity:0;transform:scale(.6);transition:all .5s cubic-bezier(.3,1.6,.5,1)}
 .qmark.on{opacity:1;transform:none}
 .punch{margin-top:44px;font-size:38px;font-weight:800;text-align:center}
 .punch em{font-style:normal;color:var(--blue)}
@@ -428,7 +428,7 @@ body.presenter #pv{display:block}
         <div class="row"><b>응답 시간</b><div class="bar"><i id="mr"></i></div><em id="mrt">30ms</em></div>
         <div class="row"><b>실패 요청</b><div class="bar"><i id="mf"></i></div><em id="mft">0%</em></div>
       </div>
-      <div class="qmark" data-step="1">?</div>
+      <i data-step="1" style="display:none"></i>
     </div>
   </div>
   <div class="punch" data-step="2">테스트 통과(CI)와 운영에서 버티는 것 사이의 간극을 <em>실제로 측정하고 판단하는</em> 서비스</div>
