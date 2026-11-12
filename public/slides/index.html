@@ -759,41 +759,6 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
 </section>
 
 <!-- ============ 11b. EXPANSION ============ -->
-<section class="slide" id="s11b" data-title="팜플렛 이후 넓힌 범위">
-  <div class="kicker rise">06 <i>Since the Pamphlet</i></div>
-  <h1 class="t rise d1">한 개짜리 앱에서, <em>실제 서비스 구성</em>으로</h1>
-  <div class="exp">
-    <div class="card rise d2"><span class="tag">여러 서비스, 여러 레포</span><h4>프론트, API, DB를 함께 띄운다</h4><p>한 레포 안의 여러 서비스, 그리고<br>서로 다른 레포를 설정 파일 하나로 묶어<br>한 환경에 배포한다.</p><div class="chips"><i>앱 2개</i><i>3개</i><i>5개 구성 실측</i></div></div>
-    <div class="card rise d3"><span class="tag">실제 업무 흐름</span><h4>브라우저로 사용자처럼 쓴다</h4><p>"살아 있나"만 보지 않고 화면에서 API, DB까지<br>이어지는 업무가 장애 중에도 되는지 본다.<br>로그인이 필요한 경로도 포함.</p></div>
-    <div class="card rise d4"><span class="tag">오래 걸리는 레포</span><h4>단계별 시간 제한과 재시도</h4><p>설치가 시간 초과되면 정리한 뒤<br>제한을 늘려 다시 시도한다. 전체 예산을 다 쓰면<br>어디서 멈췄는지 남기고 끝낸다.</p></div>
-  </div>
-  <div class="e2e" data-step="1">
-    <div class="card" style="padding:22px 30px">
-      <div style="font-size:22px;font-weight:800;margin-bottom:6px">전체 흐름 검증 7건 <span style="font-weight:500;color:var(--ink3);font-size:18px">웹 요청 → 큐 → AI → Sandbox → DB 저장</span></div>
-      <table>
-        <tr><td>단일 레포, 라우팅 단절</td><td><span class="pill p-pass">PASSED</span></td></tr>
-        <tr><td>멀티레포 FE, API, DB, 부하와 장애 4종</td><td><span class="pill p-pass">PASSED</span></td></tr>
-        <tr><td>다운로드 실패 → 재시도 / 설치 시간 초과 → 연장 재시도</td><td><span class="pill p-pass">PASSED ×2</span></td></tr>
-        <tr><td>추가 레포 누락 / 중간 빌드 실패 / 전체 시간 소진</td><td><span class="pill p-na">판정 불가 ×3</span></td></tr>
-      </table>
-    </div>
-    <div class="card" style="padding:22px 30px">
-      <div style="font-size:22px;font-weight:800">동시 사용자별 요청 실패율 <span style="font-weight:500;color:var(--ink3);font-size:18px">멀티레포 테스트 앱</span></div>
-      <div class="lbars" id="lbars">
-        <div><em>0%</em><i data-h="1" style="background:var(--pass)"></i></div>
-        <div><em>0%</em><i data-h="1" style="background:var(--pass)"></i></div>
-        <div><em>2.44%</em><i data-h="4" style="background:var(--warn)"></i></div>
-        <div><em>8.87%</em><i data-h="11" style="background:var(--warn)"></i></div>
-        <div><em style="color:var(--fail)">79.12%</em><i data-h="79" style="background:var(--fail)"></i></div>
-      </div>
-      <div class="lbx"><span>5명</span><span>10명</span><span>50명</span><span>100명</span><span>200명</span></div>
-    </div>
-  </div>
-  <aside class="notes">(7:00~7:40) 팜플렛을 낸 뒤에도 검사할 수 있는 범위를 넓혔습니다. 실제 서비스는 앱 하나로 끝나지 않고 프론트, API, 데이터베이스가 따로 돌아갑니다. 그래서 여러 서비스와 여러 레포를 설정 파일 하나로 묶어 함께 띄우게 했고, 앱 두 개, 세 개, 다섯 개 구성에서 확인했습니다.
-또 서버가 살아 있는지만 보지 않고, 브라우저로 화면에서 데이터베이스까지 이어지는 실제 업무가 장애 중에도 되는지 확인합니다. 설치가 오래 걸리는 레포는 시간을 늘려 다시 시도합니다.
-[→] 웹 요청부터 결과 저장까지 전체 흐름으로 일곱 가지 경우를 돌렸습니다. 정상인 경우는 통과했고, 레포가 빠지거나 빌드가 깨진 경우는 실패가 아니라 판정 불가로 이유와 함께 돌려줬습니다. 오른쪽은 테스트 앱에 사용자를 늘린 결과로, 10명까지는 실패가 없다가 200명에서는 요청의 79%가 실패했습니다.</aside>
-</section>
-
 <!-- ============ 12. DEMO ============ -->
 <section class="slide" id="s12" data-title="데모">
   <div class="kicker rise">07 <i>Demo</i></div>
@@ -916,7 +881,6 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
     s8(st){},
     s10(st){document.querySelectorAll('#s10 .sbar .tr i').forEach(i=>i.style.width=st>=1?getComputedStyle(i).getPropertyValue('--w'):'0');},
     s11(st){document.getElementById('pcfirst').style.opacity=st>=1?1:0;},
-    s11b(st){document.querySelectorAll('#lbars i').forEach(i=>i.style.height=st>=1?i.dataset.h+'%':'0');},
     s12(st){const fs=document.querySelectorAll('#shots figure');fs.forEach((f,i)=>f.classList.toggle('cur',i===st));const c=document.getElementById('dcap');c.querySelector('b').textContent=st+1;c.querySelector('span').textContent=fs[st].dataset.cap;}
   };
   // s6 has 6 steps via hidden markers
