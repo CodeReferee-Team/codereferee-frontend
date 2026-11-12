@@ -80,8 +80,8 @@ h1.t em{font-style:normal;color:var(--blue)}
 .mot .card{height:520px;position:relative;overflow:hidden}
 .mot h3{font-size:30px;font-weight:800;margin-bottom:10px}
 .mot p{font-size:23px;color:var(--ink2);line-height:1.5}
-.tools{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
-.tools span{font-size:22px;padding:12px 20px;border-radius:14px;background:var(--blue-soft);color:var(--blue);font-weight:700;opacity:0;transform:translateY(10px)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.tools span{font-size:21px;padding:12px 16px;white-space:nowrap;border-radius:14px;background:var(--blue-soft);color:var(--blue);font-weight:700;opacity:0;transform:translateY(10px)}
 .slide.active .tools span{animation:rise .5s ease forwards}
 .ship{margin-top:40px;display:flex;align-items:center;gap:18px;font-size:26px;font-weight:700}
 .ship .bar{flex:1;height:18px;border-radius:9px;background:var(--line);overflow:hidden}
@@ -418,10 +418,10 @@ body:hover #help{opacity:.8}
     <div class="card" data-step="2">
       <h4 class="svh">Out of Scope</h4>
       <p class="oos">코드 버그, 스타일, 테스트 실패는 판정하지 않는다.</p>
-      <p class="oos2">설치, 테스트, 기동은 장애를 걸기 위한 준비 단계다. 여기서 막히면 결과는 <b>판정 불가</b>.</p>
+      <p class="oos2">설치, 테스트, 기동은 장애를 걸기 위한 준비 단계다. 여기서 막히면<br>결과는 <b style="white-space:nowrap">판정 불가</b>.</p>
     </div>
     <div class="card diff" data-step="3">
-      <div><b>1</b><p><strong>실제로 띄우고 장애를 건다</strong><span>쿠버네티스 샌드박스에 배포하고 LitmusChaos로 주입</span></p></div>
+      <div><b>1</b><p><strong>실제로 띄우고 장애를 건다</strong><span>k8s 샌드박스에 배포하고 LitmusChaos로 주입</span></p></div>
       <div><b>2</b><p><strong>판정은 규칙이 한다</strong><span>LLM은 원인 설명과 패치만. 레포 문장에 속지 않는다</span></p></div>
       <div><b>3</b><p><strong>고칠 방법까지 검증한다</strong><span>실패하면 패치를 만들어 같은 장애로 다시 돌려 본다</span></p></div>
     </div>
@@ -484,7 +484,7 @@ body:hover #help{opacity:.8}
       <g class="node"><rect class="box" x="290" y="330" width="135" height="90" rx="16"/><text x="357" y="370" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">Postgres</text><text x="357" y="398" text-anchor="middle" font-size="17" fill="#64748b">리포트, 이력</text></g>
       <g class="node"><rect class="box" x="445" y="330" width="135" height="90" rx="16" style="stroke:#ef4444"/><text x="512" y="370" text-anchor="middle" font-size="21" font-weight="700" fill="#dc2626">Redis</text><text x="512" y="398" text-anchor="middle" font-size="17" fill="#64748b">작업 큐</text></g>
       <text x="655" y="205" text-anchor="middle" font-size="16" fill="#1d5fd1" font-weight="700">input</text>
-      <text x="655" y="330" text-anchor="middle" font-size="16" fill="#6366f1" font-weight="700">progress</text><text x="655" y="350" text-anchor="middle" font-size="16" fill="#6366f1" font-weight="700">result</text>
+      <text x="672" y="330" text-anchor="middle" font-size="16" fill="#6366f1" font-weight="700">progress</text><text x="672" y="350" text-anchor="middle" font-size="16" fill="#6366f1" font-weight="700">result</text>
       <!-- AI -->
       <g class="node"><rect class="box" x="730" y="150" width="360" height="190" rx="20" style="stroke:#1d5fd1"/><text x="910" y="200" text-anchor="middle" font-size="28" font-weight="800" fill="#1d5fd1">AI Worker</text><text x="910" y="234" text-anchor="middle" font-size="19" fill="#64748b">FastAPI + LangGraph</text>
         <g font-size="18" font-weight="700"><rect x="752" y="258" width="98" height="40" rx="10" fill="#e8efff"/><text x="801" y="285" text-anchor="middle" fill="#1d5fd1">Judge</text><rect x="861" y="258" width="98" height="40" rx="10" fill="#f5e9fb"/><text x="910" y="285" text-anchor="middle" fill="#9333ea">Critic</text><rect x="970" y="258" width="98" height="40" rx="10" fill="#f5e9fb"/><text x="1019" y="285" text-anchor="middle" fill="#9333ea">Refiner</text></g>
@@ -584,11 +584,11 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
   <h1 class="t rise d1">결과는 세 가지, 기준은 <em>실제 다운타임</em></h1>
   <div class="verdicts">
     <div class="vcard pass rise d2"><span class="badge">PASS</span><span class="ko">통과</span>
-      <p>장애를 실제로 넣었고, 사용자가 겪은 <b>다운타임이 에러 버짓 안</b>이다. 목표 사용자 수에서도 요청이 실패하지 않았다.</p></div>
+      <p>장애를 실제로 넣었고,<br>사용자가 겪은 <b>다운타임이 에러 버짓 안</b>이다.<br>목표 사용자 수에서도 요청이 실패하지 않았다.</p></div>
     <div class="vcard fail rise d3"><span class="badge">FAIL</span><span class="ko">실패</span>
-      <p>복구하지 못했거나, <b>다운타임이 에러 버짓을 다 썼다</b>. 또는 적어 준 <b>목표 동시 사용자 수</b>에서 요청이 실패했다.</p></div>
+      <p>복구하지 못했거나,<br><b>다운타임이 에러 버짓을 다 썼다</b>.<br>또는 적어 준 <b>목표 동시 사용자 수</b>에서<br>요청이 실패했다.</p></div>
     <div class="vcard na rise d4"><span class="badge">판정 불가</span>
-      <p>샌드박스에 <b>들어가지 못했다</b>. 설치, 테스트, 기동 실패, 테스트 없음, CPU 부족, 관측 불가. 재지 못한 것을 <b>합격이나 실패로 몰지 않는다</b>.</p></div>
+      <p>샌드박스에 <b>들어가지 못했다</b>.<br>설치, 테스트, 기동 실패, 테스트 없음,<br>CPU 부족, 관측 불가.<br>재지 못한 것을 <b>합격이나 실패로 몰지 않는다</b>.</p></div>
   </div>
   <div class="budget">
     <div class="card" data-step="1" id="budgetcard">
@@ -602,7 +602,7 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
       <div class="warnlist">
         <span class="pill p-warn">복제본 1개</span><span class="pill p-warn">복구가 예상보다 느림</span><span class="pill p-warn">장애 중 응답 지연 증가</span><span class="pill p-warn">일부 시나리오만 실행</span>
       </div>
-      <p style="font-size:21px;color:var(--ink2);margin-top:18px;line-height:1.5">복제본 1개는 사용자의 선택이다. 근거 없는 임계값으로 FAIL을 내지 않고 리포트에 남긴다.</p>
+      <p style="font-size:21px;color:var(--ink2);margin-top:18px;line-height:1.5">복제본 1개는 사용자의 선택이다.<br>근거 없는 임계값으로 FAIL을 내지 않고 리포트에 남긴다.</p>
     </div>
   </div>
   <aside class="notes">(4:40~5:20) 통과는 장애를 실제로 넣었고, 사용자가 겪은 다운타임이 에러 버짓 안에 있을 때입니다. 실패는 복구하지 못했거나, 다운타임이 버짓을 넘었거나, 목표 동시 사용자 수에서 요청이 실패했을 때입니다. 판정 불가는 샌드박스에 들어가지 못했을 때입니다. 재지 못한 걸 합격이나 실패로 몰지 않습니다.
@@ -632,7 +632,7 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
       <div style="font-size:19px;color:var(--ink3);margin-top:8px">레포 코드에 심은 프롬프트 인젝션 (예시)</div>
       <div class="fooled">
         <div style="background:var(--fail-soft);color:#991b1b"><b>2건</b>LLM이 속았다</div>
-        <div style="background:var(--pass-soft);color:#166534"><b>0건</b>규칙은 종료 코드와 구조화된 결과만 본다</div>
+        <div style="background:var(--pass-soft);color:#166534"><b>0건</b>규칙은 종료 코드와<br>구조화된 결과만 본다</div>
       </div>
     </div>
   </div>
@@ -692,7 +692,7 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
     </div>
     <div class="insight" data-step="2">
       <b>장애만 걸면 예제 레포는 거의 다 통과했다.</b><br>복제본 1개여도 재기동이 빨라 버짓 안에 들어온다.<br><br>
-      "사용자가 늘었을 때"를 가르려면 부하를 직접 재야 한다. 그래서 <b>동시 사용자 10 → 50 → 100 → 200명</b> 시나리오를 기본 묶음에 넣었다.
+      "사용자가 늘었을 때"를 가르려면 부하를 직접 재야 한다.<br>그래서 <b>동시 사용자 10 → 50 → 100 → 200명</b><br>시나리오를 기본 묶음에 넣었다.
     </div>
   </div>
   <aside class="notes">(6:10~6:50) 실제 공개 레포로 돌려 봤습니다. 50개 레포를 실서버에서 64번 돌렸고, 가장 중요한 숫자는 인프라 탓 판정 불가 0건입니다. 판정 불가는 전부 DB가 꼭 필요하거나 레포 자체가 빌드되지 않는 등 레포 쪽 원인이었습니다. 실제로 OOMKilled가 난 앱이 3.69초 만에 복구되는 것도 관측했습니다.
@@ -721,9 +721,9 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
       </svg>
     </div>
     <div class="story">
-      <div class="st" data-step="1"><h5><span class="pill p-fail">FAIL</span>첫 측정: 200명에서 목표 미달</h5><p>100명까지는 버텼고 200명에서 p95가 78배로 뛰며 요청이 시간 초과. Critic은 "복제본 1개라 여유가 없다"고 짚었다.</p></div>
-      <div class="st" data-step="2"><h5><span class="pill p-na">의심</span>이게 앱의 한계인가, 샌드박스의 한계인가?</h5><p>2코어 노드에서 앱이 쓰지도 않는 MySQL, Postgres까지 띄워 CPU를 나눠 쓰고 있었다. <b style="color:var(--ink)">측정 환경이 공정하지 않았다.</b></p></div>
-      <div class="st" data-step="3"><h5><span class="pill p-blue">수정</span>CPU가 모자라면 재지 않는다</h5><p>노드 CPU가 부족하면 부하 결과를 판정 불가로 낸다. 쓰지 않는 DB는 띄우지 않고, 노드를 4코어로 올렸다.</p></div>
+      <div class="st" data-step="1"><h5><span class="pill p-fail">FAIL</span>첫 측정: 200명에서 목표 미달</h5><p>100명까지는 버텼고 200명에서 p95가 78배로 뛰며 요청이 시간 초과.<br>Critic은 "복제본 1개라 여유가 없다"고 짚었다.</p></div>
+      <div class="st" data-step="2"><h5><span class="pill p-na">의심</span>이게 앱의 한계인가, 샌드박스의 한계인가?</h5><p>2코어 노드에서 앱이 쓰지도 않는 MySQL, Postgres까지 띄워<br>CPU를 나눠 쓰고 있었다. <b style="color:var(--ink)">측정 환경이 공정하지 않았다.</b></p></div>
+      <div class="st" data-step="3"><h5><span class="pill p-blue">수정</span>CPU가 모자라면 재지 않는다</h5><p>노드 CPU가 부족하면 부하 결과를 판정 불가로 낸다.<br>쓰지 않는 DB는 띄우지 않고, 노드를 4코어로 올렸다.</p></div>
       <div class="st" data-step="4"><h5><span class="pill p-pass">PASS</span>재측정: 200명까지 실패 0%</h5><p>응답은 58배 느려져 복제본 1개 경고를 달았지만, 요청은 모두 처리했다.</p></div>
     </div>
   </div>
@@ -760,9 +760,9 @@ Judge가 규칙으로 판정하고, 결과는 세 갈래로 나뉩니다. 실패
   <div class="kicker rise">08 <i>Next</i></div>
   <h1 class="t rise d1">향후 계획</h1>
   <div class="next3">
-    <div class="card rise d2"><b>01</b><strong>샌드박스 인스턴스 업사이징</strong><span>지금은 2코어 노드라 복제본을 늘린 부하를 공정하게 잴 수 없다. CPU가 모자라면 부하 결과를 <em>판정 불가</em>로 처리하고 있다.</span><div class="up"><i>2 cores</i><s></s><i class="on">4+ cores</i></div></div>
-    <div class="card rise d3"><b>02</b><strong>동적 타임아웃</strong><span>요청 기한은 샌드박스까지 전달된다. 다음은 실측 분포를 쌓아 레포 크기와 빌드 시간으로 기한을 미리 예측하는 것.</span><div class="tbar"><i></i></div></div>
-    <div class="card rise d4"><b>03</b><strong>부하와 장애를 동시에</strong><span>평소 트래픽을 걸어 둔 채 Pod를 죽여야 실제 운영과 같다. 안전 인원의 절반을 배경 부하로 두는 안을 검토 중.</span><div class="mix"><i></i><i></i><i></i><i class="x"></i><i></i></div></div>
+    <div class="card rise d2"><b>01</b><strong>샌드박스 인스턴스 업사이징</strong><span>지금은 2코어 노드라<br>복제본을 늘린 부하를 공정하게 잴 수 없다.<br>CPU가 모자라면 부하 결과를<br><em>판정 불가</em>로 처리하고 있다.</span><div class="up"><i>2 cores</i><s></s><i class="on">4+ cores</i></div></div>
+    <div class="card rise d3"><b>02</b><strong>동적 타임아웃</strong><span>요청 기한은 샌드박스까지 전달된다.<br>다음은 실측 분포를 쌓아<br>레포 크기와 빌드 시간으로<br>기한을 미리 예측하는 것.</span><div class="tbar"><i></i></div></div>
+    <div class="card rise d4"><b>03</b><strong>부하와 장애를 동시에</strong><span>평소 트래픽을 걸어 둔 채<br>Pod를 죽여야 실제 운영과 같다.<br>안전 인원의 절반을 배경 부하로 두는<br>안을 검토 중.</span><div class="mix"><i></i><i></i><i></i><i class="x"></i><i></i></div></div>
   </div>
   <aside class="notes">(8:40~9:40) 시간이 모자라면 이 장은 넘어갑니다.
 향후 계획은 세 가지입니다. 첫째, 샌드박스 인스턴스 업사이징입니다. 지금은 2코어 노드라 복제본을 늘린 부하를 공정하게 잴 수 없어서, CPU가 모자라면 부하 결과를 판정 불가로 처리하고 있습니다. 4코어 이상으로 올리면 이 제약이 풀립니다.
