@@ -60,10 +60,11 @@ h1.t em{font-style:normal;color:var(--blue)}
 #s1{background:#0b1020;color:#fff;display:flex;flex-direction:column;justify-content:center}
 #s1 .logo{font-size:150px;font-weight:800;letter-spacing:-.04em;line-height:1}
 #s1 .logo span{color:#6f95ff}
-#s1 .q{font-size:52px;font-weight:700;margin-top:36px;color:#e2e8f0}
+#s1 .q{font-size:50px;font-weight:700;margin-top:40px;color:#e2e8f0;line-height:1.35}
 #s1 .d{font-size:28px;color:#94a3b8;margin-top:18px}
-#s1 .meta{position:absolute;left:120px;bottom:96px;font-size:22px;color:#64748b;display:flex;gap:40px}
-#s1 .bgviz{position:absolute;right:0;top:0;bottom:0;width:58%;opacity:.9}
+#s1 .meta{position:absolute;left:120px;bottom:110px;font-size:26px;color:#cbd5e1;display:flex;gap:56px}
+#s1 .meta b{font-family:var(--mono);font-weight:600;color:#6f95ff;margin-right:12px}
+#s1 .bgviz{position:absolute;right:0;top:0;bottom:0;width:46%;opacity:.9}
 #s1 .users circle{fill:#6f95ff;opacity:0}
 .slide.active#s1 .users circle{animation:dotIn .4s ease forwards}
 @keyframes dotIn{from{opacity:0;transform:scale(0)}to{opacity:.85;transform:none}}
@@ -294,6 +295,18 @@ h1.t em{font-style:normal;color:var(--blue)}
 .mix i:nth-child(2){animation-delay:.2s!important}.mix i:nth-child(3){animation-delay:.4s!important}.mix i:nth-child(5){animation-delay:.6s!important}
 .mix i.x{background:var(--fail)}
 @keyframes mx{to{height:100%}}
+
+.demohead{display:flex;align-items:flex-end;justify-content:space-between}
+#dcap{font-size:26px;color:var(--ink3);font-family:var(--mono)}
+#dcap b{color:var(--ink);font-size:34px}
+#dcap span{font-family:inherit;font-family:'Pretendard Variable',sans-serif;color:var(--ink);font-weight:700;margin-left:14px}
+.browser{margin-top:34px;height:740px;border-radius:14px;background:#fff;border:1px solid #d6dbe3;box-shadow:0 18px 48px #0f172a1f;overflow:hidden;display:flex;flex-direction:column}
+.bbar{height:46px;flex:none;background:#eef1f5;border-bottom:1px solid #d6dbe3;display:flex;align-items:center;gap:9px;padding:0 18px}
+.bbar>i{width:13px;height:13px;border-radius:50%;background:#cbd2dc}
+.bbar .tab{margin-left:18px;height:34px;align-self:flex-end;background:#fff;border:1px solid #d6dbe3;border-bottom:0;border-radius:9px 9px 0 0;padding:0 22px;display:flex;align-items:center;font-size:16px;color:var(--ink2)}
+.browser .shots{flex:1;position:relative}
+.browser .shots figure{align-items:flex-start;padding:26px 40px 0}
+.browser .shots img{box-shadow:none;border:0;border-radius:0;max-height:100%}
 /* notes */
 #notes{position:fixed;left:0;right:0;bottom:0;max-height:34vh;overflow:auto;background:#0f172aee;color:#e2e8f0;font-size:17px;line-height:1.6;padding:16px 28px;display:none;z-index:20;border-top:2px solid var(--blue)}
 #notes.show{display:block}
@@ -324,11 +337,10 @@ body:hover #help{opacity:.8}
   <div style="position:relative;z-index:2">
     <div class="kicker rise" style="color:#6f95ff">SRE Reliability Check</div>
     <div class="logo rise d1">Code<span>Referee</span></div>
-    <div class="q rise d2">사용자가 늘어도, 버티는가?</div>
-    <div class="d rise d3">GitHub 레포에 실제로 장애와 부하를 걸어 안정성을 판정하는 플랫폼</div>
+    <div class="q rise d2">카오스 엔지니어링 기반<br>GitHub 저장소 안정성 자동 검증 에이전트</div>
   </div>
-  <div class="meta rise d4"><span>2026 졸업 프로젝트</span><span>CodeReferee Team</span></div>
-  <aside class="notes">(0:00~0:10) 안녕하세요, CodeReferee 팀입니다. 저희가 만든 건 GitHub 레포를 넣으면 "이 서비스, 사용자가 늘어도 버티는가?"에 답해 주는 플랫폼입니다.</aside>
+  <div class="meta rise d4"><span><b>C211205</b> 정승윤</span><span><b>C311211</b> 유도훈</span><span><b>C135109</b> 김태우</span></div>
+  <aside class="notes">(0:00~0:10) 안녕하세요, 카오스 엔지니어링 기반 GitHub 저장소 안정성 자동 검증 에이전트, CodeReferee를 발표할 정승윤, 유도훈, 김태우입니다.</aside>
 </section>
 
 <!-- ============ 2. MOTIVATION ============ -->
@@ -700,23 +712,16 @@ AI 서버는 FastAPI와 LangGraph로 파이프라인을 돌리면서 판정과 �
 <!-- ============ 12. DEMO ============ -->
 <section class="slide" id="s12" data-title="데모">
   <div class="kicker rise">07 <i>Demo</i></div>
-  <h1 class="t rise d1">실제 화면</h1>
-  <div class="demo">
-    <div class="dlist rise d2" id="dlist">
-      <div class="cur">① 검증 요청<small>URL, 검사 종류, 예상 사용자 수</small></div>
-      <div>② 진행과 판정<small>단계별 진행, 최종 판정</small></div>
-      <div>③ 장애 복구<small>장애 중 가동률, 복구 시간</small></div>
-      <div>④ 동시 사용자 부하<small>10 → 200명 구간별 결과</small></div>
-      <div>⑤ 자원 사용 추이<small>1초 단위 CPU, 메모리</small></div>
-      <div>⑥ 수정안<small>Refiner 패치, 재검증 절차</small></div>
-    </div>
-    <div class="shots rise d3" id="shots">
-      <figure class="cur"><img src="assets/screen-request.jpg" alt="검증 요청 화면"></figure>
-      <figure><img src="assets/screen-verdict.jpg" alt="진행과 판정 화면"></figure>
-      <figure><img src="assets/screen-recovery.jpg" alt="장애 복구 화면"></figure>
-      <figure><img src="assets/screen-load.jpg" alt="동시 사용자 부하 화면"></figure>
-      <figure><img src="assets/screen-metrics.jpg" alt="자원 사용 추이 화면"></figure>
-      <figure><img src="assets/screen-patch.jpg" alt="수정안 화면"></figure>
+  <div class="demohead rise d1"><h1 class="t">spring-petclinic 검사 결과</h1><div id="dcap"><b>1</b>/6 <span>검증 요청</span></div></div>
+  <div class="browser rise d2">
+    <div class="bbar"><i></i><i></i><i></i><div class="tab">CodeReferee</div></div>
+    <div class="shots" id="shots">
+      <figure class="cur" data-cap="검증 요청"><img src="assets/screen-request.jpg" alt="검증 요청 화면"></figure>
+      <figure data-cap="진행과 판정"><img src="assets/screen-verdict.jpg" alt="진행과 판정 화면"></figure>
+      <figure data-cap="장애 복구"><img src="assets/screen-recovery.jpg" alt="장애 복구 화면"></figure>
+      <figure data-cap="동시 사용자 부하"><img src="assets/screen-load.jpg" alt="동시 사용자 부하 화면"></figure>
+      <figure data-cap="자원 사용 추이"><img src="assets/screen-metrics.jpg" alt="자원 사용 추이 화면"></figure>
+      <figure data-cap="수정안"><img src="assets/screen-patch.jpg" alt="수정안 화면"></figure>
     </div>
   </div>
   <i data-step="1" hidden></i><i data-step="2" hidden></i><i data-step="3" hidden></i><i data-step="4" hidden></i><i data-step="5" hidden></i>
@@ -823,7 +828,7 @@ AI 서버는 FastAPI와 LangGraph로 파이프라인을 돌리면서 판정과 �
     s8(st){},
     s10(st){document.querySelectorAll('#s10 .sbar .tr i').forEach(i=>i.style.width=st>=1?getComputedStyle(i).getPropertyValue('--w'):'0');},
     s11(st){document.getElementById('pcfirst').style.opacity=st>=1?1:0;},
-    s12(st){document.querySelectorAll('#dlist div').forEach((d,i)=>d.classList.toggle('cur',i===st));document.querySelectorAll('#shots figure').forEach((f,i)=>f.classList.toggle('cur',i===st));}
+    s12(st){const fs=document.querySelectorAll('#shots figure');fs.forEach((f,i)=>f.classList.toggle('cur',i===st));const c=document.getElementById('dcap');c.querySelector('b').textContent=st+1;c.querySelector('span').textContent=fs[st].dataset.cap;}
   };
   // s6 has 6 steps via hidden markers
   (function(){const s6=document.getElementById('s6');for(let i=1;i<=6;i++){const m=document.createElement('i');m.dataset.step=i;m.hidden=true;s6.appendChild(m);}})();
