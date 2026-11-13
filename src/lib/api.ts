@@ -152,6 +152,9 @@ export interface TaskStatus {
   commitSha: string | null
   chaosOptions: ChaosOptions
   aiReports: AiReports | null
+  // 내 앞에 남은 미완료 요청 수. 대기 중일 때만 들어오고, 그 밖에는 null이다.
+  // 접수 시각이 없는 옛 레코드도 순서를 알 수 없어 null이다.
+  queuedAhead: number | null
 }
 
 // Sandbox가 받는 값은 닫힌 집합이다(codereferee-sandbox app/main.py).
