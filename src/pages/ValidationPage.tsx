@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router'
 import '@/styles/cockpit.css'
 import { LiveElapsed } from '@/components/LiveElapsed'
+import { QueuePosition } from '@/components/QueuePosition'
 import { PipelineProgress } from '@/components/PipelineProgress'
 import { ReportView } from '@/components/ReportView'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -114,6 +115,7 @@ export default function ValidationPage() {
                   terminal={isTerminal(data.currentAgent)}
                   queued={data.currentAgent === 'QUEUED'}
                 />
+                <QueuePosition queuedAhead={data.queuedAhead} />
               </dl>
               <p className="font-mono text-xs text-muted-foreground">
                 {data.taskId} · 갱신 {formatServerTime(data.updatedAt)}
