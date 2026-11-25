@@ -2,11 +2,20 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   getValidation,
   getValidationHistory,
+  getValidationCapabilities,
   isTerminal,
   submitValidation,
 } from '@/lib/api'
 
 const POLL_INTERVAL_MS = 2000
+
+export const useValidationCapabilities = () =>
+  useQuery({
+    queryKey: ['validation-capabilities'],
+    queryFn: getValidationCapabilities,
+    retry: false,
+    staleTime: 30_000,
+  })
 
 export const useSubmitValidation = () =>
   useMutation({ mutationFn: submitValidation })

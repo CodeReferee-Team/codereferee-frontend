@@ -1,6 +1,6 @@
 # 단일 HTTP 서비스. Dockerfile/포트/환경변수는 내 프로젝트에 맞게 수정합니다.
 # Dockerfile 경로는 레포 루트 기준입니다. 해당 파일이 실제로 존재해야 합니다.
-# 저장 위치: .codereferee/validation.yaml
+# 사용: 요청 화면에 업로드하거나 레포의 .codereferee/validation.yaml에 저장
 version: 1
 service:
   buildContext: .

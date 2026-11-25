@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -21,7 +21,8 @@ import {
   inspectionMode,
   SUITES,
 } from '@/lib/chaos'
-import { useSubmitValidation } from '@/lib/queries'
+import { useSubmitValidation, useValidationCapabilities } from '@/lib/queries'
+import { readValidationUpload } from '@/lib/validation-upload'
 import { cn } from '@/lib/utils'
 
 // shadcn Input과 같은 모양의 네이티브 select
@@ -31,6 +32,7 @@ const SELECT_CLASS =
 export default function SubmitPage() {
   const navigate = useNavigate()
   const submit = useSubmitValidation()
+  const capabilities = useValidationCapabilities()
   const [url, setUrl] = useState('')
   const [branch, setBranch] = useState('')
   const [commitSha, setCommitSha] = useState('')
@@ -39,6 +41,42 @@ export default function SubmitPage() {
   const [email, setEmail] = useState('')
   const [targetUsers, setTargetUsers] = useState('')
   const [extras, setExtras] = useState<string[]>([])
+  const [validationYaml, setValidationYaml] = useState<string>()
+  const [validationName, setValidationName] = useState('')
+  const [uploadError, setUploadError] = useState<string>()
+  const [uploadReading, setUploadReading] = useState(false)
+  const uploadSequence = useRef(0)
+  const [uploadKey, setUploadKey] = useState(0)
+  const uploadSupported = capabilities.data?.validationYaml === true
+
+  const clearUpload = () => {
+    uploadSequence.current += 1
+    setValidationYaml(undefined)
+    setValidationName('')
+    setUploadError(undefined)
+    setUploadReading(false)
+    setUploadKey((key) => key + 1)
+  }
+
+  const selectUpload = async (file: File | undefined) => {
+    if (!file) { clearUpload(); return }
+    const sequence = ++uploadSequence.current
+    setValidationYaml(undefined)
+    setValidationName('')
+    setUploadError(undefined)
+    setUploadReading(true)
+    try {
+      const text = await readValidationUpload(file)
+      if (sequence !== uploadSequence.current) return
+      setValidationYaml(text)
+      setValidationName(file.name)
+      setProfile('')
+    } catch (error) {
+      if (sequence === uploadSequence.current) setUploadError(error instanceof Error ? error.message : '파일을 읽지 못했어요.')
+    } finally {
+      if (sequence === uploadSequence.current) setUploadReading(false)
+    }
+  }
 
   const selectedMode = modeInfo(chaosMode)
   const selectedExtras = CHAOS_MODES.filter((mode) => extras.includes(mode.value))
@@ -57,6 +95,7 @@ export default function SubmitPage() {
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
+    if (uploadReading || uploadError || (validationYaml !== undefined && !uploadSupported)) return
     const shouldEmailReport = email.trim() !== ''
     submit.mutate(
       {
@@ -69,6 +108,7 @@ export default function SubmitPage() {
         deployment_profile: needsProfile && profileValue ? profileValue : undefined,
         email: email.trim() || undefined,
         target_users: runsLoad ? targetUsersValue : undefined,
+        ...(validationYaml !== undefined ? { validation_yaml: validationYaml } : {}),
       },
       {
         onSuccess: ({ requestId }) =>
@@ -155,6 +195,28 @@ export default function SubmitPage() {
               </div>
             </aside>
 
+            <div className="space-y-2 rounded-lg border p-3">
+              <Label htmlFor="validation-yaml">검증 설정 YAML (선택)</Label>
+              <Input key={uploadKey} id="validation-yaml" type="file" accept=".yaml,.yml"
+                disabled={!uploadSupported || submit.isPending}
+                aria-describedby="validation-upload-hint"
+                onChange={(e) => { void selectUpload(e.target.files?.[0]) }} />
+              <p id="validation-upload-hint" className="text-xs text-muted-foreground">
+                UTF-8 YAML 파일 1개, 최대 64KiB. 사용자 GitHub에 커밋하지 않고 이번 검사와 재검증에만 적용해요.
+                레포에 같은 설정이 있으면 업로드한 설정을 우선 사용해요. 운영 비밀번호·API 키 대신 테스트용 값을 사용하세요.
+              </p>
+              {!uploadSupported && <p className="text-xs text-muted-foreground">
+                {capabilities.isPending ? '서버의 설정 업로드 지원 여부를 확인하고 있어요.' : '현재 서버에서 설정 업로드를 사용할 수 없어요. 설정 없이 URL 검사는 계속할 수 있어요.'}
+              </p>}
+              {uploadReading && <p role="status" className="text-xs">설정 파일을 읽고 있어요.</p>}
+              {uploadError && <p role="alert" className="text-sm text-destructive">{uploadError}</p>}
+              {(validationName || uploadError) && <Button type="button" variant="outline" size="sm" onClick={clearUpload}>설정 파일 제거</Button>}
+              {validationYaml !== undefined && <details className="text-xs">
+                <summary className="cursor-pointer">선택한 설정: {validationName}</summary>
+                <pre className="mt-2 max-h-52 overflow-auto rounded bg-muted p-2 whitespace-pre-wrap">{validationYaml}</pre>
+              </details>}
+            </div>
+
             <fieldset className="space-y-3 rounded-lg border p-4">
               <legend className="px-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">카오스 실험</legend>
               <div className="space-y-2">
@@ -175,7 +237,7 @@ export default function SubmitPage() {
                 <p className="text-xs text-muted-foreground">
                   {selectedMode
                     ? selectedMode.description
-                    : '레포를 직접 실행하지 않고, 준비된 테스트 서비스로 기본 실험(Pod Kill)을 해요.'}
+                    : '제출한 레포의 설치·빌드·실행 가능한 테스트와 HTTP 응답을 확인해요. 장애는 주입하지 않아요.'}
                 </p>
               </div>
 
@@ -237,6 +299,7 @@ export default function SubmitPage() {
                   <Label htmlFor="profile">배포 프로필 (선택)</Label>
                   <Input
                     id="profile"
+                    disabled={validationYaml !== undefined}
                     list="deployment-profiles"
                     className={cn('font-mono', profileInvalid && profile && 'border-destructive')}
                     placeholder="비워두면 자동 — 레포 설정에서 읽어요"
@@ -249,7 +312,7 @@ export default function SubmitPage() {
                     ))}
                   </datalist>
                   <p className="text-xs text-muted-foreground">
-                    비워두면 레포의 <code className="font-mono">.codereferee/validation.yaml</code>이나
+                    업로드한 설정이 있으면 별도 프로필은 사용하지 않아요. 비워두면 레포의 <code className="font-mono">.codereferee/validation.yaml</code>이나
                     Dockerfile로 샌드박스가 자동 감지해요. 설정이 없는 레포(예: QuickByte)만
                     등록된 프로필명을 넣으세요.
                   </p>
@@ -281,7 +344,7 @@ export default function SubmitPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={submit.isPending || profileInvalid || (runsLoad && targetUsersInvalid)}
+              disabled={submit.isPending || profileInvalid || uploadReading || !!uploadError || (validationYaml !== undefined && !uploadSupported) || (runsLoad && targetUsersInvalid)}
             >
               {submit.isPending ? '제출 중…' : '검증 시작'}
             </Button>

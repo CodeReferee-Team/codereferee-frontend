@@ -12,6 +12,7 @@ import {
 import {
   patchCheck,
   policyWarnings,
+  uploadedConfiguration,
   type AiReports,
   type ChaosObservation,
 } from '@/lib/api'
@@ -374,6 +375,7 @@ function SelfHealingCard({
 }
 
 export function ReportView({ reports }: { reports: AiReports }) {
+  const configuration = uploadedConfiguration(reports)
   const {
     judge_report,
     critic_feedback,
@@ -425,6 +427,17 @@ export function ReportView({ reports }: { reports: AiReports }) {
 
       {healing && <SelfHealingCard data={healing} />}
 
+      {configuration && (
+        <Card>
+          <CardHeader><CardTitle>업로드한 검증 설정</CardTitle>
+            <CardDescription>임시 clone에 적용했으며 사용자 GitHub에는 커밋하지 않았어요.</CardDescription></CardHeader>
+          <CardContent className="space-y-1 text-xs">
+            <p className="break-all font-mono">업로드 설정 SHA-256 (UTF-8·LF 정규화): {configuration.uploaded_sha256}</p>
+            {configuration.effective_sha256 && configuration.effective_sha256 !== configuration.uploaded_sha256 &&
+              <p className="break-all font-mono">수정 후 설정 SHA-256: {configuration.effective_sha256}</p>}
+          </CardContent>
+        </Card>
+      )}
       <ChaosRecoveryPanel reports={reports} />
       <ResourceChart reports={reports} />
 
