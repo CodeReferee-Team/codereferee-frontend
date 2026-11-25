@@ -89,9 +89,9 @@ export function inspectionMode(mode: string, extras: readonly string[]): string 
   return 'suite_custom__v1_' + bits.toString(16)
 }
 
-// 모드를 고르지 않으면 샌드박스가 제어된 fixture 서비스를 대상으로 기본 실험(Pod Kill)을 한다.
+// 모드를 고르지 않으면 제출한 레포의 일반 실행·HTTP 검증을 하고 장애는 주입하지 않는다.
 // 사용자 레포를 실제로 실행하는 실험이 아니라는 점을 화면에서 분명히 보여준다.
-export const DEFAULT_MODE_LABEL = '기본 (fixture 서비스)'
+export const DEFAULT_MODE_LABEL = '일반 검사 (장애 주입 없음)'
 
 // 샌드박스가 profiles/{name}.json으로 조회하는 배포 프로필.
 export const KNOWN_DEPLOYMENT_PROFILES = ['quickbyte-demo', 'quickbyte-demo-ha']

@@ -100,6 +100,30 @@ export function infraError(reports: AiReports | null | undefined): string | null
   return typeof fromPreflight === 'string' && fromPreflight ? fromPreflight : null
 }
 
+export function configurationIssue(reports: AiReports | null | undefined): string | null {
+  const code = infraError(reports)
+  if (code === 'uploaded_configuration_invalid') return '업로드한 validation.yaml의 문법·버전·크기와 지원 필드를 확인해 주세요. 이번에는 실행 설정을 적용하지 못해 판정하지 않았어요.'
+  if (code === 'uploaded_configuration_not_applied') return '서버가 업로드한 설정의 적용을 확인해 주지 못했어요. 서버 배포 버전을 확인해야 하며, 레포 코드 결함으로 판단한 결과는 아니에요.'
+  if (code === 'sandbox_configuration_unsupported') return '현재 실행 환경이 설정 업로드를 지원하지 않아요. 외부 Sandbox 연결과 배포 상태를 확인해 주세요.'
+  if (code || reports?.judge_report?.reason_category !== 'service_not_deployable') return null
+  const stderr = reports.execution_result?.stderr
+  if (typeof stderr === 'string' && stderr.includes('Compose needs explicit safe reproduction settings for:') && stderr.includes('env_file')) {
+    return 'Compose의 .env 파일은 자동으로 가져오지 않아요. 테스트용 환경변수와 의존성을 validation.yaml에 선언해 업로드해 주세요. 운영 비밀값을 GitHub에 올릴 필요는 없어요.'
+  }
+  return '실행할 HTTP 서비스와 의존성 설정을 확인해 주세요. 설정 파일을 업로드하거나 레포에 선언할 수 있어요. 서비스·레포 수 제한과 미지원 의존성도 확인해 주세요. 코드 결함으로 판단한 결과는 아니에요.'
+}
+
+export function uploadedConfiguration(reports: AiReports): { uploaded_sha256: string; effective_sha256?: string } | null {
+  const source = reports.execution_result?.source ?? reports.metrics?.source
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null
+  const input = (source as Record<string, unknown>).configuration_input
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return null
+  const value = input as Record<string, unknown>
+  if (value.source !== 'request_upload' || typeof value.uploaded_sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(value.uploaded_sha256)) return null
+  return { uploaded_sha256: value.uploaded_sha256,
+    ...(typeof value.effective_sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.effective_sha256) ? { effective_sha256: value.effective_sha256 } : {}) }
+}
+
 /** 판정을 뒤집지 않는 경고. `metrics.policy_warnings`로 온다. */
 export function policyWarnings(reports: AiReports | null | undefined): string[] {
   const raw = reports?.metrics?.policy_warnings
@@ -188,6 +212,8 @@ export interface SubmitValidationRequest {
   email?: string
   // 예상 동시 사용자 수(1~500). 적으면 그 인원에서 실패할 때 Fail이 된다. 비우면 측정값만 나온다.
   target_users?: number
+  // 사용자 레포를 수정하지 않고 이번 검사에만 적용하는 설정.
+  validation_yaml?: string
 }
 
 export class ApiError extends Error {
@@ -224,6 +250,9 @@ export const submitValidation = (body: SubmitValidationRequest) =>
     method: 'POST',
     body: JSON.stringify(body),
   })
+
+export const getValidationCapabilities = () =>
+  request<{ validationYaml?: boolean; validationYamlMaxBytes?: number }>('/api/validations/capabilities')
 
 export const getValidation = (requestId: string) =>
   request<TaskStatus>(`/api/validations/${encodeURIComponent(requestId)}`)

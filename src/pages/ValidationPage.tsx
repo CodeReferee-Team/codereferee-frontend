@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ApiError, chaosObserved, infraError, isTerminal } from '@/lib/api'
+import { ApiError, chaosObserved, configurationIssue, infraError, isTerminal } from '@/lib/api'
 import { describeStop, modeLabel } from '@/lib/chaos'
 import {
   describeError,
@@ -34,6 +34,7 @@ export default function ValidationPage() {
   const reasonCategory = data?.aiReports?.judge_report?.reason_category
   // ERROR면 Judge를 건너뛰어 judge_report가 비어 있다. 사유는 infra_error에만 있다.
   const infra = infraError(data?.aiReports)
+  const configIssue = configurationIssue(data?.aiReports)
   const stop = describeStop(data?.aiReports?.metrics?.stopped_at, data?.aiReports?.metrics?.stopped_reason)
 
   return (
@@ -98,7 +99,7 @@ export default function ValidationPage() {
               />
 
               <p className="text-sm text-muted-foreground">
-                {(reasonCategory && REASON_LABEL[reasonCategory]) ||
+                {configIssue || (reasonCategory && REASON_LABEL[reasonCategory]) ||
                   (infra && REASON_LABEL[infra]) ||
                   stepHintOverride(data.currentAgent, chaosRequested) ||
                   STEP_HINT[data.currentAgent]}
@@ -146,9 +147,9 @@ export default function ValidationPage() {
               </Alert>
             ) : (
               <Alert className="border-amber-500/50">
-                <AlertTitle>판정 불가 (인프라 오류)</AlertTitle>
+                <AlertTitle>{configIssue ? '판정 불가 (설정 확인 필요)' : '판정 불가 (인프라 오류)'}</AlertTitle>
                 <AlertDescription>
-                  {describeError(
+                  {configIssue || describeError(
                     data.errorMessage,
                     data.aiReports?.metrics?.infra_error,
                   )}
