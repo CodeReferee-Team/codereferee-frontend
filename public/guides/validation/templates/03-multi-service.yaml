@@ -1,0 +1,31 @@
+# 한 레포의 gateway/ 와 api/ 를 각각 배포하는 예시입니다.
+# 두 디렉토리와 Dockerfile을 실제 경로로 바꾸세요.
+# API_URL/REDIS_HOST/REDIS_PORT는 앱이 실제로 읽는 환경변수 이름으로 바꾸세요.
+# gateway 앱이 API_URL을 사용해 /api/ 요청을 api로 전달하도록 구현돼 있어야 합니다.
+version: 2
+services:
+  gateway:
+    buildContext: gateway
+    dockerfile: gateway/Dockerfile
+    port: 8080
+    healthPath: /health
+    dependsOn: [api]
+    env:
+      API_URL: '{{service.api.url}}'
+  api:
+    buildContext: api
+    dockerfile: api/Dockerfile
+    port: 8000
+    healthPath: /health
+    env:
+      REDIS_HOST: '{{dependency.redis.host}}'
+      REDIS_PORT: '{{dependency.redis.port}}'
+dependencies:
+  redis:
+    type: redis
+    probePath: /api/items/1
+entryService: gateway
+targetService: api
+# 이 경로는 gateway에서 접근 가능하고, 실제 Redis 업무를 수행해야 합니다.
+probePath: /api/items/1
+# Redis가 필요 없는 앱이면 dependencies와 관련 env를 함께 제거하세요.

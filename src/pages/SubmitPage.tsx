@@ -134,6 +134,15 @@ export default function SubmitPage() {
               </div>
             </div>
 
+            <aside className="rounded-lg border bg-muted/30 p-3 text-sm">
+              <p>설정 없이 실행할 수 있는 레포인지 먼저 확인하세요.</p>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
+                <a className="underline underline-offset-4" href="/guides/validation/index.html" target="_blank" rel="noopener noreferrer">지원 범위와 설정 작성 가이드</a>
+                <a className="underline underline-offset-4" href="/guides/validation/guide.pdf" target="_blank" rel="noopener noreferrer">PDF 안내서</a>
+                <a className="underline underline-offset-4" href="/guides/validation/validation-templates.zip" download>YAML 양식 받기</a>
+              </div>
+            </aside>
+
             <fieldset className="space-y-3 rounded-lg border p-4">
               <legend className="px-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">카오스 실험</legend>
               <div className="space-y-2">
