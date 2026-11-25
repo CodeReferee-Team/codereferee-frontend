@@ -5,6 +5,7 @@ import { CHAOS_MODES, inspectionMode, SUITES } from '../.runtime/testbuild/chaos
 test('a preset without extras preserves the existing wire field', () => {
   assert.equal(inspectionMode('suite_standard', []), 'suite_standard')
 })
+
 test('extras merge with mandatory scenarios without duplicates', () => {
   assert.equal(inspectionMode('suite_quick', ['litmus_container_kill', 'litmus_pod_cpu_hog']),
     'suite_custom__ck__cpu')
@@ -66,3 +67,4 @@ test('the requester\'s expected users are named in the load sentence', async () 
   assert.ok(describeLoad(load).endsWith(' 예상하신 150명을 버티지 못했어요.'))
   assert.ok(describeLoad({ ...load, target_met: null }).indexOf('예상하신') === -1)
 })
+
