@@ -388,11 +388,6 @@ export function ReportView({ reports }: { reports: AiReports }) {
   const scalarMetrics = Object.entries(metrics ?? {}).filter(
     ([, v]) => v === null || typeof v !== 'object',
   )
-  const JUDGE_KEYS = ['status', 'reason', 'evidence']
-  const judgeExtras = Object.entries(judge_report ?? {}).filter(
-    ([k, v]) =>
-      !JUDGE_KEYS.includes(k) && (v === null || typeof v !== 'object'),
-  )
   // 경고는 판정을 뒤집지 않지만 사용자가 알아야 한다. 특히 단일 replica 경고는
   // "통과"의 의미를 좁힌다. 1대짜리 앱은 그 1대가 멈추면 끊긴다.
   const warnings = policyWarnings(reports)
@@ -454,16 +449,6 @@ export function ReportView({ reports }: { reports: AiReports }) {
               <p className="text-sm">{judge_report.reason}</p>
             )}
             <EvidenceList items={judge_report.evidence} />
-            {/* 스키마(status/reason/evidence)에 없는 값은 버리지 않고 그대로 보여준다. */}
-            {judgeExtras.length > 0 && (
-              <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {judgeExtras.map(([k, v]) => (
-                  <Field key={k} label={k}>
-                    <span className="font-mono">{formatValue(v)}</span>
-                  </Field>
-                ))}
-              </dl>
-            )}
           </CardContent>
         </Card>
       )}

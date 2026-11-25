@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import '@/styles/cockpit.css'
 import { LiveElapsed } from '@/components/LiveElapsed'
 import { QueuePosition } from '@/components/QueuePosition'
@@ -23,7 +23,9 @@ import { CHAOS_SKIPPED_HINT, STEP_HINT } from '@/lib/steps'
 
 export default function ValidationPage() {
   const { requestId = '' } = useParams()
+  const location = useLocation()
   const { data, error, isPending } = useValidation(requestId)
+  const shouldEmailReport = location.state?.shouldEmailReport === true
   const chaosRan = chaosObserved(data?.aiReports)
   // 장애 주입 옵션을 넣어 제출했는가. 그러면 샌드박스 안에서 빌드와 장애 주입이 한 번에 진행된다.
   const chaosRequested = !!data?.chaosOptions?.mode
@@ -39,6 +41,15 @@ export default function ValidationPage() {
       <Button variant="ghost" size="sm" render={<Link to="/" />}>
         ← 새 검증
       </Button>
+
+      {shouldEmailReport && (
+        <Alert>
+          <AlertTitle>검증이 시작됐어요</AlertTitle>
+          <AlertDescription>
+            완료되면 입력한 이메일로 PDF 리포트를 보내드려요.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {isPending && <Skeleton className="h-40 w-full" />}
 

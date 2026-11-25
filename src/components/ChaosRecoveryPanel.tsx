@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { HelpTip } from '@/components/ui/help-tip'
 import type { AiReports } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -113,7 +114,12 @@ export function ChaosRecoveryPanel({ reports }: { reports: AiReports }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>카오스 복구</CardTitle>
+        <div className="flex items-center gap-1.5">
+          <CardTitle>카오스 복구</CardTitle>
+          <HelpTip label="카오스 복구 지표">
+            가동률은 장애 중 정상 요청 비율, 오류율은 실패 요청 비율, p95는 요청 95%가 완료된 시간, 복구 시간은 장애 주입 후 정상 상태로 돌아오기까지 걸린 시간이에요.
+          </HelpTip>
+        </div>
         <CardDescription>
           장애를 주입하고 서비스가 회복하는 과정을 관측한 결과예요.
         </CardDescription>
@@ -180,7 +186,7 @@ export function ChaosRecoveryPanel({ reports }: { reports: AiReports }) {
         </dl>
 
         <p className="text-[11px] text-muted-foreground">
-          집계 지표로 그린 복구 스키매틱이에요. 요청 단위 실측 곡선은 준비 중이에요.
+          집계 지표를 기반으로 표시한 복구 흐름이에요.
         </p>
       </CardContent>
     </Card>
