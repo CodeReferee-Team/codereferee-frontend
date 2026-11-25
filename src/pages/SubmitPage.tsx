@@ -94,7 +94,7 @@ export default function SubmitPage() {
           </p>
         </div>
         <a
-          className="shrink-0 text-center text-[0.65rem] text-muted-foreground hover:text-foreground"
+          className="mt-2 shrink-0 text-center text-[0.65rem] text-muted-foreground hover:text-foreground"
           href="https://qrfy.io/0ty_n9HeFI"
           target="_blank"
           rel="noopener noreferrer"
