@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { HelpTip } from '@/components/ui/help-tip'
 import {
   CHAOS_MODES,
   DEFAULT_MODE_LABEL,
@@ -39,6 +40,7 @@ export default function SubmitPage() {
   const [extras, setExtras] = useState<string[]>([])
 
   const selectedMode = modeInfo(chaosMode)
+  const selectedExtras = CHAOS_MODES.filter((mode) => extras.includes(mode.value))
   const needsProfile = selectedMode?.needsProfile ?? false
   const profileValue = profile.trim()
   // 배포 프로필은 옵셔널이다. 레포가 자체 .codereferee/validation.yaml을 가지면 프로필 없이
@@ -49,6 +51,7 @@ export default function SubmitPage() {
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
+    const shouldEmailReport = email.trim() !== ''
     submit.mutate(
       {
         repository_url: url.trim(),
@@ -59,7 +62,12 @@ export default function SubmitPage() {
         deployment_profile: needsProfile && profileValue ? profileValue : undefined,
         email: email.trim() || undefined,
       },
-      { onSuccess: ({ requestId }) => navigate(`/validations/${requestId}`) },
+      {
+        onSuccess: ({ requestId }) =>
+          navigate(`/validations/${requestId}`, {
+            state: { shouldEmailReport },
+          }),
+      },
     )
   }
 
@@ -80,7 +88,9 @@ export default function SubmitPage() {
       <Card>
         <CardHeader>
           <CardTitle>레포지토리 검증</CardTitle>
-          <CardDescription>공개 GitHub 레포 URL을 입력하세요.</CardDescription>
+          <CardDescription>
+            공개 GitHub 레포를 검증하고 결과 리포트를 이메일로 받아보세요.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -142,7 +152,12 @@ export default function SubmitPage() {
 
               {needsProfile && (
                 <div className="space-y-2">
-                  <Label>추가 시나리오 (선택)</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Label>추가 시나리오 (선택)</Label>
+                    <HelpTip label="추가 시나리오">
+                      선택한 기본 검사에 장애 시나리오를 더해 순서대로 실행해요. 앞선 시나리오가 실패하면 뒤 시나리오는 실행하지 않을 수 있어요.
+                    </HelpTip>
+                  </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {CHAOS_MODES.filter((m) => !m.value.startsWith('suite_') &&
                       !(SUITES[chaosMode] ?? [chaosMode]).includes(m.value)).map((m) => (
@@ -150,10 +165,20 @@ export default function SubmitPage() {
                         <input type="checkbox" checked={extras.includes(m.value)}
                           onChange={(e) => setExtras((items) => e.target.checked ?
                             [...items, m.value] : items.filter((item) => item !== m.value))} />
-                        {m.label}
+                        <span>{m.label}</span>
                       </label>
                     ))}
                   </div>
+                  {selectedExtras.length > 0 && (
+                    <div className="space-y-1 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                      {selectedExtras.map((mode) => (
+                        <p key={mode.value}>
+                          <span className="font-medium">{mode.label}:</span>{' '}
+                          {mode.description}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

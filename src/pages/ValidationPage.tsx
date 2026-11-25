@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import '@/styles/cockpit.css'
 import { LiveFlowLog } from '@/components/LiveFlowLog'
 import { PipelineProgress } from '@/components/PipelineProgress'
@@ -23,7 +23,9 @@ import { CHAOS_SKIPPED_HINT, STEP_HINT } from '@/lib/steps'
 
 export default function ValidationPage() {
   const { requestId = '' } = useParams()
+  const location = useLocation()
   const { data, error, isPending } = useValidation(requestId)
+  const shouldEmailReport = location.state?.shouldEmailReport === true
   const chaosRan = chaosObserved(data?.aiReports)
   const failure = data ? failureReason(data.errorMessage) : null
   // 종결된 요청만 소요 시간을 보여준다. 옛 레코드는 createdAt이 없어 표시하지 않는다.
@@ -44,6 +46,15 @@ export default function ValidationPage() {
       <Button variant="ghost" size="sm" render={<Link to="/" />}>
         ← 새 검증
       </Button>
+
+      {shouldEmailReport && (
+        <Alert>
+          <AlertTitle>검증이 시작됐어요</AlertTitle>
+          <AlertDescription>
+            완료되면 입력한 이메일로 PDF 리포트를 보내드려요.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {isPending && <Skeleton className="h-40 w-full" />}
 
