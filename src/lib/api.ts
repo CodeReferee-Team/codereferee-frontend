@@ -152,6 +152,10 @@ export interface TaskStatus {
   commitSha: string | null
   chaosOptions: ChaosOptions
   aiReports: AiReports | null
+  // 내 앞에 남은 미완료 요청 수. 대기 중일 때만 들어오고, 그 밖에는 null이다.
+  // 접수 시각이 없는 옛 레코드도 순서를 알 수 없어 null이다.
+  // 이 키를 모르는 옛 서버를 보고 있으면 아예 오지 않으므로 선택 항목으로 둔다.
+  queuedAhead?: number | null
 }
 
 // Sandbox가 받는 값은 닫힌 집합이다(codereferee-sandbox app/main.py).
@@ -182,6 +186,8 @@ export interface SubmitValidationRequest {
   deployment_profile?: string
   // 입력하면 검증이 끝났을 때 서버가 이 주소로 PDF 리포트를 보낸다. 비우면 보내지 않는다.
   email?: string
+  // 예상 동시 사용자 수(1~500). 적으면 그 인원에서 실패할 때 Fail이 된다. 비우면 측정값만 나온다.
+  target_users?: number
 }
 
 export class ApiError extends Error {

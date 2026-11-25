@@ -5,6 +5,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CodeReferee</title>
+    <!-- 화면이 뜨기 전에 테마를 먼저 적용해서 흰 화면이 번쩍이는 것을 막는다.
+         규칙은 src/lib/theme.ts와 같다(저장값이 있으면 그 값, 없으면 저녁 7시부터 아침 7시 전까지 다크). -->
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('cr-theme');
+          var h = new Date().getHours();
+          var dark = pref === 'dark' || (pref !== 'light' && (h >= 19 || h < 7));
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

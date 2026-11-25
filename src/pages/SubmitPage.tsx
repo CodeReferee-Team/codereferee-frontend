@@ -37,17 +37,23 @@ export default function SubmitPage() {
   const [chaosMode, setChaosMode] = useState('')
   const [profile, setProfile] = useState('')
   const [email, setEmail] = useState('')
+  const [targetUsers, setTargetUsers] = useState('')
   const [extras, setExtras] = useState<string[]>([])
 
   const selectedMode = modeInfo(chaosMode)
   const selectedExtras = CHAOS_MODES.filter((mode) => extras.includes(mode.value))
   const needsProfile = selectedMode?.needsProfile ?? false
   const profileValue = profile.trim()
-  // 배포 프로필은 옵셔널이다. 레포가 자체 .codereferee/validation.yaml을 가지면 프로필 없이
-  // 그 설정으로 배포된다(샌드박스 resolve_plan). 비워서 보내면 샌드박스가 레포 설정을 쓰므로,
-  // 비어 있다고 막지 않는다. 값이 있을 때만 형식을 검증한다.
+  // 프로필을 비워도 된다. 샌드박스가 레포의 .codereferee/validation.yaml에서 읽거나
+  // Dockerfile로 자동 감지한다. 값을 넣었을 때만 형식을 검사한다(오타 조기 차단).
+  const targetUsersValue = targetUsers.trim() === '' ? undefined : Number(targetUsers)
+  const targetUsersInvalid =
+    targetUsersValue !== undefined && !(Number.isInteger(targetUsersValue) && targetUsersValue >= 1 && targetUsersValue <= 500)
+  const runsLoad = (SUITES[chaosMode] ?? [chaosMode]).concat(extras).includes('load_concurrent_users')
   const profileInvalid =
-    needsProfile && profileValue !== '' && !DEPLOYMENT_PROFILE_PATTERN.test(profileValue)
+    needsProfile &&
+    profileValue !== '' &&
+    !DEPLOYMENT_PROFILE_PATTERN.test(profileValue)
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -58,9 +64,11 @@ export default function SubmitPage() {
         branch: branch.trim() || undefined,
         commit_sha: commitSha.trim() || undefined,
         chaos_mode: inspectionMode(chaosMode, extras) || undefined,
-        // 프로필은 레포 배포형 모드에서만 의미가 있다. 기본(fixture) 모드에 보내면 샌드박스가 거절한다.
+        // 프로필은 레포 배포형 모드에서만 보낸다. 비우면 보내지 않고, 샌드박스가
+        // 레포 설정(.codereferee/validation.yaml)이나 Dockerfile로 자동 해소한다.
         deployment_profile: needsProfile && profileValue ? profileValue : undefined,
         email: email.trim() || undefined,
+        target_users: runsLoad ? targetUsersValue : undefined,
       },
       {
         onSuccess: ({ requestId }) =>
@@ -182,14 +190,35 @@ export default function SubmitPage() {
                 </div>
               )}
 
+              {runsLoad && (
+                <div className="space-y-2">
+                  <Label htmlFor="target-users">예상 동시 사용자 수 (선택)</Label>
+                  <Input
+                    id="target-users"
+                    type="number"
+                    min={1}
+                    max={500}
+                    inputMode="numeric"
+                    className={cn(targetUsersInvalid && 'border-destructive')}
+                    placeholder="예: 100"
+                    value={targetUsers}
+                    onChange={(e) => setTargetUsers(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    적으면 그 인원을 꼭 재고, 그 인원에서 요청이 실패하면 불합격으로 판정한 뒤 고친 수정안을 같은
+                    부하로 다시 검증해요. 비우면 몇 명까지 버티는지만 알려 드려요. 1~500명.
+                  </p>
+                </div>
+              )}
+
               {needsProfile && (
                 <div className="space-y-2">
-                  <Label htmlFor="profile">배포 프로필</Label>
+                  <Label htmlFor="profile">배포 프로필 (선택)</Label>
                   <Input
                     id="profile"
                     list="deployment-profiles"
                     className={cn('font-mono', profileInvalid && profile && 'border-destructive')}
-                    placeholder="비우면 레포의 .codereferee 설정 사용"
+                    placeholder="비워두면 자동 — 레포 설정에서 읽어요"
                     value={profile}
                     onChange={(e) => setProfile(e.target.value)}
                   />
@@ -199,7 +228,9 @@ export default function SubmitPage() {
                     ))}
                   </datalist>
                   <p className="text-xs text-muted-foreground">
-                    샌드박스가 이 이름으로 배포 설정을 찾아요. 소문자, 숫자, 하이픈만 쓸 수 있어요.
+                    비워두면 레포의 <code className="font-mono">.codereferee/validation.yaml</code>이나
+                    Dockerfile로 샌드박스가 자동 감지해요. 설정이 없는 레포(예: QuickByte)만
+                    등록된 프로필명을 넣으세요.
                   </p>
                 </div>
               )}
@@ -229,7 +260,7 @@ export default function SubmitPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={submit.isPending || profileInvalid}
+              disabled={submit.isPending || profileInvalid || (runsLoad && targetUsersInvalid)}
             >
               {submit.isPending ? '제출 중…' : '검증 시작'}
             </Button>
