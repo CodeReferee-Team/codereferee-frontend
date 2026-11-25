@@ -1,0 +1,17 @@
+# 단일 HTTP 서비스. Dockerfile/포트/환경변수는 내 프로젝트에 맞게 수정합니다.
+# Dockerfile 경로는 레포 루트 기준입니다. 해당 파일이 실제로 존재해야 합니다.
+# 저장 위치: .codereferee/validation.yaml
+version: 1
+service:
+  buildContext: .
+  dockerfile: Dockerfile
+  port: 8000
+  healthPath: /
+  replicas: 1
+  env:
+    APP_ENV: demo
+# 테스트/빌드 경로를 따로 지정해야 한다면 아래를 프로젝트에 맞게 활성화합니다.
+# verification:
+#   stack: python  # python, node, gradle, maven 중 선택
+#   workingDirectory: .
+#   test: [python, -m, pytest]

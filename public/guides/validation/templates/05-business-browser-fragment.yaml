@@ -1,0 +1,21 @@
+# 독립 실행용 파일이 아닙니다. version 2 또는 3 설정의 최상위에 합치세요.
+# API 경로/요청 본문/응답 필드/화면 선택자를 실제 앱에 맞게 바꿉니다.
+probePath: /api/items
+probeSpec:
+  setup:
+    - path: /api/items
+      method: POST
+      body: {label: 'demo-${runId}'}
+      extract: {itemId: id}
+  steps:
+    - path: '/api/items/${itemId}'
+      expect: {saved: true, label: 'demo-${runId}'}
+# 화면 검증도 필요하면 아래를 활성화하세요. 브라우저는 entryService에 접속합니다.
+# browserProbe:
+#   timeoutSeconds: 30
+#   stepTimeoutSeconds: 5
+#   steps:
+#     - {action: goto, path: /}
+#     - {action: fill, selector: '#item', value: 'ui-${runId}'}
+#     - {action: click, selector: '#save'}
+#     - {action: assertText, selector: '#items', text: 'ui-'}
