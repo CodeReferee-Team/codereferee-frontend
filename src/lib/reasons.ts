@@ -69,7 +69,7 @@ export const REASON_LABEL: Record<string, string> = {
   no_tests_detected:
     '테스트가 없어서 통과 여부를 확인할 수 없었어요. 실패가 아니라 검증 불가예요.',
   service_not_deployable:
-    '배포할 HTTP 서비스를 정하지 못해 장애를 걸 대상이 없었어요. 라이브러리라면 정상이고, 서비스라면 .codereferee/validation.yaml에 선언해 주세요.',
+    '배포할 HTTP 서비스를 정하지 못했거나 설정 제한을 넘었어요. 서비스 6개 이상, 추가 레포 5개 이상, Kafka 같은 미지원 의존성이 포함됐는지 확인해 주세요.',
   dependency_install_failed: '의존성 설치가 실패해서 빌드까지 가지 못했어요.',
   docker_build_failed: 'Docker 이미지 빌드가 실패했어요.',
   service_smoke_failed: '서비스를 띄운 뒤 스모크 테스트에 응답하지 않았어요.',
