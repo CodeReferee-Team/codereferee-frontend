@@ -81,16 +81,28 @@ export default function SubmitPage() {
 
   return (
     <main className="mx-auto flex min-h-svh max-w-xl flex-col justify-center gap-6 p-6">
-      <div>
-        <p className="mb-2 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          SRE Reliability Check
-        </p>
-        <h1 className="text-4xl font-semibold tracking-tight">
-          Code<span className="text-primary">Referee</span>
-        </h1>
-        <p className="mt-2 max-w-md text-[0.95rem] leading-relaxed text-muted-foreground">
-          GitHub 레포를 샌드박스에서 실행하고 장애를 주입해 신뢰성을 검증해요.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="mb-2 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            SRE Reliability Check
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight">
+            Code<span className="text-primary">Referee</span>
+          </h1>
+          <p className="mt-2 max-w-md text-[0.95rem] leading-relaxed text-muted-foreground">
+            GitHub 레포를 샌드박스에서 실행하고 장애를 주입해 신뢰성을 검증해요.
+          </p>
+        </div>
+        <a
+          className="shrink-0 text-center text-[0.65rem] text-muted-foreground hover:text-foreground"
+          href="https://qrfy.io/0ty_n9HeFI"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="시연 영상 열기"
+        >
+          <img className="size-14 rounded-md border bg-white p-1 sm:size-16" src="/demo-video-qr.png" alt="시연 영상 QR 코드" />
+          <span className="mt-1 block">시연 영상</span>
+        </a>
       </div>
 
       <Card>

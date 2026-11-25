@@ -1,14 +1,589 @@
-<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CodeReferee 검증 설정 가이드</title><style>body{font-family:"Malgun Gothic",system-ui,sans-serif;color:#172d37;background:#f5f8f9;margin:0;line-height:1.75}main{max-width:960px;margin:auto;padding:36px 24px}header,section{background:white;border:1px solid #d9e3e6;border-radius:12px;padding:28px;margin-bottom:20px}h1,h2,h3{color:#103d47;line-height:1.4}a{color:#075d75}nav{display:flex;flex-wrap:wrap;gap:12px}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid #d9e3e6;text-align:left;padding:10px;vertical-align:top}th{background:#e2eff1}pre{white-space:pre;overflow:auto;background:#102e37;color:#eff9f8;padding:18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px}button,.download{display:inline-block;padding:8px 12px;margin:4px;border:1px solid #8cafb7;border-radius:7px;background:white;color:#07576b;cursor:pointer}details{margin:16px 0;border-top:1px solid #d9e3e6;padding-top:12px}summary{cursor:pointer;font-weight:bold}.note{color:#526b74;font-size:.92em}@media print{body{background:white}main{padding:0}section,header{border:0;padding:12px;break-inside:avoid}nav,button{display:none}pre{white-space:pre-wrap;color:black;background:#f3f5f6}}</style><main><header><h1>CodeReferee 검증 설정 가이드</h1><p>설정 없이 체험 가능한 범위를 확인하고, 필요한 경우 양식을 선택하세요.</p><nav><a class="download" href="guide.pdf" download>PDF 가이드 받기</a><a class="download" href="validation-templates.zip" download>YAML 양식 ZIP 받기</a><a class="download" href="https://codereferee-frontend.vercel.app" target="_blank" rel="noopener">검증 화면 열기</a></nav><p class="note">2026-11-25 코드 기준 · 양식은 내 프로젝트에 맞게 수정해야 합니다.</p></header><section><h2>처음 방문한 분께</h2><p>CodeReferee는 공개 GitHub 레포를 격리 환경에서 실행하고, 선택한 장애에 대한 응답과 복구를 관측합니다. 먼저 간단한 단일 HTTP 서비스로 체험해 보세요.</p><h3>현장에서는 이 순서로 진행하세요</h3><ol><li>공개 GitHub 레포 URL을 입력합니다. 다른 브랜치에 코드가 있으면 브랜치도 입력합니다.</li><li>실험 종류에서 빠른 검사를 선택합니다. 제출한 서비스에 Container Kill을 적용해 복구를 관측합니다.</li><li>배포 프로필은 우선 비워둡니다. 지원되는 실행 환경과 레포 설정을 자동 탐색합니다.</li><li>결과 메일을 받으려면 본인 이메일을 입력합니다. 발송은 운영 메일 설정과 정상 완료 여부에 따릅니다.</li><li>접수 후 작업 ID와 결과 주소를 보관합니다. 요청은 현재 한 건씩 처리돼 대기할 수 있습니다.</li></ol><h3>설정 없이 먼저 시도하기 좋은 레포</h3><p>레포 루트에 실행 대상이 하나 있고, 지원하는 빌드/실행 방식이 있으며, 테스트용 환경에서 시작할 수 있는 HTTP 앱입니다. 단순한 FastAPI·Flask·Node·Spring Boot 앱이나 단일 HTTP 포트를 노출하는 Dockerfile이 대표적입니다.</p><h3>설정이 복잡하면 부스에서 받아 가세요</h3><p>여러 서비스·외부 인증·별도 비밀값이 필요한 프로젝트는 환경 확인에 시간이 걸릴 수 있습니다. 양식과 가이드를 받아 설정을 준비한 뒤 다시 요청할 수 있습니다.</p><p>검사는 수 분 이상 걸릴 수 있고, 대기와 자동 수정으로 더 길어질 수 있습니다. 기본 응답 검사와 서비스 전체 업무의 정확성 검사는 범위가 다릅니다.</p></section><section><h2>설정 없이 가능한 범위</h2><table><tr><th>레포 구성</th><th>자동 탐색 조건</th></tr><tr><td>Python</td><td>app.py / main.py / app/main.py의 FastAPI, 루트 Flask 앱 등 지원 패턴</td></tr><tr><td>Node / Vite</td><td>package.json의 실행 스크립트 또는 지원되는 Vite 정적 빌드</td></tr><tr><td>Spring Boot</td><td>지원 Maven/Gradle 구성과 실행 아티팩트를 찾을 수 있는 구조</td></tr><tr><td>Dockerfile</td><td>루트 Dockerfile에 하나의 TCP 포트가 명확하고 검사·실행 조건이 충족되는 구성</td></tr><tr><td>Compose</td><td>빌드할 HTTP 앱이 정확히 하나이며 지원 DB/Redis 등과 함께 있는 제한된 구성</td></tr></table><p>의존성 설치·빌드·발견 가능한 테스트·기동·HTTP 응답을 확인합니다. 테스트 실행 여부는 실제 결과에서 확인해야 합니다. Chaos는 선택한 실험에 따라 수행합니다.</p><h3>다음 경우에는 설정을 준비하세요</h3><ol><li>실행할 서비스가 여러 개이거나 하위 디렉토리 선택이 필요할 때</li><li>포트가 없거나 여러 개여서 HTTP 대상이 불명확할 때</li><li>실행 환경변수·DB·Redis·명시적 검사 명령이 필요할 때</li><li>여러 레포를 함께 띄우거나 서비스 간 연결을 정의해야 할 때</li><li>업무 API의 요청 순서·기대 응답 또는 화면 동작을 검증할 때</li></ol><p>지원되는 로컬 DB 설정은 자동 탐색할 수 있습니다. 사설 레포, 미지원 스택·의존성, 외부 서비스 자격증명, 무거운 빌드 등은 추가 설정이나 지원 범위 확인이 필요합니다. 모든 레포의 실행 성공을 보장하지 않습니다.</p></section><section><h2>양식 선택과 반영 방법</h2><table><tr><th>내 상황</th><th>받을 양식</th></tr><tr><td>자동 실행되며 복제본/자원만 조정</td><td>01-auto-override.yaml</td></tr><tr><td>단일 서비스의 실행 설정 지정</td><td>02-single-service.yaml</td></tr><tr><td>한 레포의 여러 앱 서비스</td><td>03-multi-service.yaml</td></tr><tr><td>여러 레포의 서비스 그룹</td><td>04-multi-repository.yaml</td></tr><tr><td>업무 요청/화면 검사 추가</td><td>05-business-browser-fragment.yaml</td></tr></table><ol><li>양식의 주석을 읽고 실제 디렉토리·Dockerfile·포트·경로·환경변수로 바꿉니다.</li><li>선택한 레포 루트에 .codereferee 폴더를 만들고 파일 이름을 validation.yaml로 저장합니다.</li><li>변경을 커밋하고 요청할 원격 브랜치에 push합니다. 로컬 파일만 저장하면 원격 검사에 반영되지 않습니다.</li><li>프론트에 레포 URL과 해당 브랜치를 입력합니다. 커밋 SHA를 입력한다면 설정이 포함된 새 SHA를 사용합니다.</li><li>배포 프로필은 비워두고 검사 종류를 선택합니다. 프로필 칸에 파일 경로를 입력하지 않습니다.</li></ol><h3>단일 서비스 예시</h3><pre>version: 1
+<!doctype html>
+<html lang="ko">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>CodeReferee 검증 설정 가이드</title
+  ><style>
+    @font-face {
+      font-family: "Geist Variable";
+      src: url("/fonts/geist-latin-wght-normal.woff2") format("woff2");
+      font-weight: 100 900;
+      font-display: swap;
+    }
+    :root {
+      --foreground: #171717;
+      --muted: #737373;
+      --border: #e5e5e5;
+      --soft: #fafafa;
+      --primary: #2563b9;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Geist Variable", "Malgun Gothic", system-ui, sans-serif;
+      color: var(--foreground);
+      background: white;
+      margin: 0;
+      line-height: 1.7;
+    }
+    main {
+      max-width: 720px;
+      margin: auto;
+      padding: 64px 24px 80px;
+    }
+    .hero {
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 36px;
+    }
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 36px;
+      line-height: 1.15;
+      letter-spacing: -0.04em;
+    }
+    .hero h1 span {
+      color: var(--primary);
+    }
+    .subtitle {
+      max-width: 540px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .qr {
+      flex: none;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+      text-decoration: none;
+    }
+    .qr img {
+      display: block;
+      width: 64px;
+      height: 64px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+    }
+    .qr span {
+      display: block;
+      margin-top: 4px;
+    }
+    .hero nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+    section {
+      padding-bottom: 32px;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    section:last-child {
+      border: 0;
+    }
+    h2 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      line-height: 1.3;
+      letter-spacing: -0.025em;
+    }
+    h3 {
+      margin: 24px 0 8px;
+      font-size: 17px;
+      line-height: 1.4;
+    }
+    p,
+    ol {
+      margin: 10px 0;
+    }
+    a {
+      color: var(--primary);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    th,
+    td {
+      border: 1px solid var(--border);
+      text-align: left;
+      padding: 10px;
+      vertical-align: top;
+    }
+    th {
+      background: var(--soft);
+      font-weight: 600;
+    }
+    pre {
+      white-space: pre;
+      overflow: auto;
+      background: #171717;
+      color: #fafafa;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    button,
+    .download {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      color: var(--foreground);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    button {
+      margin: 4px;
+    }
+    .download:hover {
+      background: var(--soft);
+    }
+    details {
+      margin: 16px 0;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 560px) {
+      main {
+        padding: 32px 20px 56px;
+      }
+      .hero-top {
+        gap: 12px;
+      }
+      .hero h1 {
+        font-size: 31px;
+      }
+      .qr img {
+        width: 52px;
+        height: 52px;
+      }
+      .subtitle {
+        font-size: 14px;
+      }
+      section {
+        padding-bottom: 24px;
+        margin-bottom: 24px;
+      }
+      h2 {
+        font-size: 21px;
+      }
+      th,
+      td {
+        padding: 8px;
+        font-size: 13px;
+      }
+    }
+    @media print {
+      body {
+        background: white;
+      }
+      main {
+        padding: 0;
+      }
+      .hero,
+      section {
+        border: 0;
+        padding: 12px;
+        break-inside: avoid;
+      }
+      nav,
+      .qr,
+      button {
+        display: none;
+      }
+      pre {
+        white-space: pre-wrap;
+        color: black;
+        background: #f3f5f6;
+      }
+    }
+  </style>
+  <main>
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <p class="eyebrow">SRE Reliability Check</p>
+          <h1>Code<span>Referee</span></h1>
+          <p class="subtitle">
+            검증 설정 가이드 · 설정 없이 체험 가능한 범위를 확인하고 필요한
+            양식을 선택하세요.
+          </p>
+        </div>
+        <a
+          class="qr"
+          href="https://qrfy.io/0ty_n9HeFI"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="시연 영상 열기"
+        >
+          <img src="/demo-video-qr.png" alt="시연 영상 QR 코드" />
+          <span>시연 영상</span>
+        </a>
+      </div>
+      <nav>
+        <a class="download" href="guide.pdf" download>PDF 가이드 받기</a
+        ><a class="download" href="validation-templates.zip" download
+          >YAML 양식 ZIP 받기</a
+        ><a class="download" href="https://codereferee-frontend.vercel.app"
+          >검증 화면으로 돌아가기</a
+        >
+      </nav>
+      <p class="note">
+        2026-11-25 코드 기준 · 양식은 내 프로젝트에 맞게 수정해야 합니다.
+      </p>
+    </header>
+    <section>
+      <h2>처음 방문한 분께</h2>
+      <p>
+        CodeReferee는 공개 GitHub 레포를 격리 환경에서 실행하고, 선택한 장애에
+        대한 응답과 복구를 관측합니다. 먼저 간단한 단일 HTTP 서비스로 체험해
+        보세요.
+      </p>
+      <h3>현장에서는 이 순서로 진행하세요</h3>
+      <ol>
+        <li>
+          공개 GitHub 레포 URL을 입력합니다. 다른 브랜치에 코드가 있으면
+          브랜치도 입력합니다.
+        </li>
+        <li>
+          실험 종류에서 빠른 검사를 선택합니다. 제출한 서비스에 Container Kill을
+          적용해 복구를 관측합니다.
+        </li>
+        <li>
+          배포 프로필은 우선 비워둡니다. 지원되는 실행 환경과 레포 설정을 자동
+          탐색합니다.
+        </li>
+        <li>
+          결과 메일을 받으려면 본인 이메일을 입력합니다. 발송은 운영 메일 설정과
+          정상 완료 여부에 따릅니다.
+        </li>
+        <li>
+          접수 후 작업 ID와 결과 주소를 보관합니다. 요청은 현재 한 건씩 처리돼
+          대기할 수 있습니다.
+        </li>
+      </ol>
+      <h3>설정 없이 먼저 시도하기 좋은 레포</h3>
+      <p>
+        레포 루트에 실행 대상이 하나 있고, 지원하는 빌드/실행 방식이 있으며,
+        테스트용 환경에서 시작할 수 있는 HTTP 앱입니다. 단순한
+        FastAPI·Flask·Node·Spring Boot 앱이나 단일 HTTP 포트를 노출하는
+        Dockerfile이 대표적입니다.
+      </p>
+      <h3>설정이 복잡하면 부스에서 받아 가세요</h3>
+      <p>
+        여러 서비스·외부 인증·별도 비밀값이 필요한 프로젝트는 환경 확인에 시간이
+        걸릴 수 있습니다. 양식과 가이드를 받아 설정을 준비한 뒤 다시 요청할 수
+        있습니다.
+      </p>
+      <p>
+        검사는 수 분 이상 걸릴 수 있고, 대기와 자동 수정으로 더 길어질 수
+        있습니다. 기본 응답 검사와 서비스 전체 업무의 정확성 검사는 범위가
+        다릅니다.
+      </p>
+    </section>
+    <section>
+      <h2>설정 없이 가능한 범위</h2>
+      <table>
+        <tr>
+          <th>레포 구성</th>
+          <th>자동 탐색 조건</th>
+        </tr>
+        <tr>
+          <td>Python</td>
+          <td>
+            app.py / main.py / app/main.py의 FastAPI, 루트 Flask 앱 등 지원 패턴
+          </td>
+        </tr>
+        <tr>
+          <td>Node / Vite</td>
+          <td>package.json의 실행 스크립트 또는 지원되는 Vite 정적 빌드</td>
+        </tr>
+        <tr>
+          <td>Spring Boot</td>
+          <td>지원 Maven/Gradle 구성과 실행 아티팩트를 찾을 수 있는 구조</td>
+        </tr>
+        <tr>
+          <td>Dockerfile</td>
+          <td>
+            루트 Dockerfile에 하나의 TCP 포트가 명확하고 검사·실행 조건이
+            충족되는 구성
+          </td>
+        </tr>
+        <tr>
+          <td>Compose</td>
+          <td>
+            빌드할 HTTP 앱이 정확히 하나이며 지원 DB/Redis 등과 함께 있는 제한된
+            구성
+          </td>
+        </tr>
+      </table>
+      <p>
+        의존성 설치·빌드·발견 가능한 테스트·기동·HTTP 응답을 확인합니다. 테스트
+        실행 여부는 실제 결과에서 확인해야 합니다. Chaos는 선택한 실험에 따라
+        수행합니다.
+      </p>
+      <h3>다음 경우에는 설정을 준비하세요</h3>
+      <ol>
+        <li>실행할 서비스가 여러 개이거나 하위 디렉토리 선택이 필요할 때</li>
+        <li>포트가 없거나 여러 개여서 HTTP 대상이 불명확할 때</li>
+        <li>실행 환경변수·DB·Redis·명시적 검사 명령이 필요할 때</li>
+        <li>여러 레포를 함께 띄우거나 서비스 간 연결을 정의해야 할 때</li>
+        <li>업무 API의 요청 순서·기대 응답 또는 화면 동작을 검증할 때</li>
+      </ol>
+      <p>
+        지원되는 로컬 DB 설정은 자동 탐색할 수 있습니다. 사설 레포, 미지원
+        스택·의존성, 외부 서비스 자격증명, 무거운 빌드 등은 추가 설정이나 지원
+        범위 확인이 필요합니다. 모든 레포의 실행 성공을 보장하지 않습니다.
+      </p>
+    </section>
+    <section>
+      <h2>양식 선택과 반영 방법</h2>
+      <table>
+        <tr>
+          <th>내 상황</th>
+          <th>받을 양식</th>
+        </tr>
+        <tr>
+          <td>자동 실행되며 복제본/자원만 조정</td>
+          <td>01-auto-override.yaml</td>
+        </tr>
+        <tr>
+          <td>단일 서비스의 실행 설정 지정</td>
+          <td>02-single-service.yaml</td>
+        </tr>
+        <tr>
+          <td>한 레포의 여러 앱 서비스</td>
+          <td>03-multi-service.yaml</td>
+        </tr>
+        <tr>
+          <td>여러 레포의 서비스 그룹</td>
+          <td>04-multi-repository.yaml</td>
+        </tr>
+        <tr>
+          <td>업무 요청/화면 검사 추가</td>
+          <td>05-business-browser-fragment.yaml</td>
+        </tr>
+      </table>
+      <ol>
+        <li>
+          양식의 주석을 읽고 실제 디렉토리·Dockerfile·포트·경로·환경변수로
+          바꿉니다.
+        </li>
+        <li>
+          선택한 레포 루트에 .codereferee 폴더를 만들고 파일 이름을
+          validation.yaml로 저장합니다.
+        </li>
+        <li>
+          변경을 커밋하고 요청할 원격 브랜치에 push합니다. 로컬 파일만 저장하면
+          원격 검사에 반영되지 않습니다.
+        </li>
+        <li>
+          프론트에 레포 URL과 해당 브랜치를 입력합니다. 커밋 SHA를 입력한다면
+          설정이 포함된 새 SHA를 사용합니다.
+        </li>
+        <li>
+          배포 프로필은 비워두고 검사 종류를 선택합니다. 프로필 칸에 파일 경로를
+          입력하지 않습니다.
+        </li>
+      </ol>
+      <h3>단일 서비스 예시</h3>
+      <pre>
+version: 1
 service:
   buildContext: .
   dockerfile: Dockerfile
   port: 8000
   healthPath: /
   env:
-    APP_ENV: demo</pre><p>Dockerfile 경로는 해당 레포 루트 기준입니다. buildContext는 Docker가 읽을 빌드 디렉토리입니다. 환경변수 이름은 앱이 실제로 읽는 이름과 같아야 합니다. 운영 비밀번호 대신 재현용 값을 사용하고, 관리형 의존성의 비밀번호는 Sandbox 템플릿을 사용합니다.</p></section><section><h2>여러 서비스와 레포 연결</h2><p>version 2는 한 레포 안의 여러 서비스를 선언합니다. version 3는 repositories에 추가 소스를 선언하고 각 서비스의 repository로 소유 레포를 연결합니다. main은 제출한 레포를 뜻합니다.</p><table><tr><th>필드</th><th>정할 내용</th></tr><tr><td>buildContext / dockerfile / port</td><td>각 서비스의 빌드 위치·이미지 정의·접속 포트</td></tr><tr><td>env / dependsOn</td><td>서비스 연결 정보와 다른 앱 서비스의 준비 순서</td></tr><tr><td>entryService</td><td>검증 HTTP 요청이 들어갈 서비스</td></tr><tr><td>targetService</td><td>선택한 앱 장애를 주입할 서비스</td></tr><tr><td>probePath / probeSpec</td><td>진입 서비스에서 호출할 업무 경로와 기대 응답</td></tr><tr><td>repositories</td><td>추가 공개 GitHub URL, 브랜치와 선택적 고정 SHA</td></tr></table><h3>주소는 Sandbox가 채웁니다</h3><pre>API_URL: &#x27;{{service.api.url}}&#x27;
+    APP_ENV: demo</pre>
+      <p>
+        Dockerfile 경로는 해당 레포 루트 기준입니다. buildContext는 Docker가
+        읽을 빌드 디렉토리입니다. 환경변수 이름은 앱이 실제로 읽는 이름과 같아야
+        합니다. 운영 비밀번호 대신 재현용 값을 사용하고, 관리형 의존성의
+        비밀번호는 Sandbox 템플릿을 사용합니다.
+      </p>
+    </section>
+    <section>
+      <h2>여러 서비스와 레포 연결</h2>
+      <p>
+        version 2는 한 레포 안의 여러 서비스를 선언합니다. version 3는
+        repositories에 추가 소스를 선언하고 각 서비스의 repository로 소유 레포를
+        연결합니다. main은 제출한 레포를 뜻합니다.
+      </p>
+      <table>
+        <tr>
+          <th>필드</th>
+          <th>정할 내용</th>
+        </tr>
+        <tr>
+          <td>buildContext / dockerfile / port</td>
+          <td>각 서비스의 빌드 위치·이미지 정의·접속 포트</td>
+        </tr>
+        <tr>
+          <td>env / dependsOn</td>
+          <td>서비스 연결 정보와 다른 앱 서비스의 준비 순서</td>
+        </tr>
+        <tr>
+          <td>entryService</td>
+          <td>검증 HTTP 요청이 들어갈 서비스</td>
+        </tr>
+        <tr>
+          <td>targetService</td>
+          <td>선택한 앱 장애를 주입할 서비스</td>
+        </tr>
+        <tr>
+          <td>probePath / probeSpec</td>
+          <td>진입 서비스에서 호출할 업무 경로와 기대 응답</td>
+        </tr>
+        <tr>
+          <td>repositories</td>
+          <td>추가 공개 GitHub URL, 브랜치와 선택적 고정 SHA</td>
+        </tr>
+      </table>
+      <h3>주소는 Sandbox가 채웁니다</h3>
+      <pre>
+API_URL: &#x27;{{service.api.url}}&#x27;
 REDIS_HOST: &#x27;{{dependency.redis.host}}&#x27;
 REDIS_PORT: &#x27;{{dependency.redis.port}}&#x27;
-DB_PASSWORD: &#x27;{{dependency.database.password}}&#x27;</pre><p>템플릿으로 주소를 넣어도 앱의 프록시나 클라이언트 코드는 그 변수를 사용하도록 구현돼 있어야 합니다. gateway로 보낸 업무 요청이 api와 DB/Redis를 실제로 통과하는 경로를 선택하세요.</p><h3>업무·화면 검증 확장</h3><p>probeSpec은 생성 요청 → 응답 ID 추출 → 조회와 JSON 필드 확인 등을 지원합니다. browserProbe는 진입 서비스의 화면에서 이동·입력·클릭·텍스트 확인 등을 수행합니다. 05번 파일은 version 2/3 설정에 합치는 선택 조각입니다.</p><p>하나의 요청은 지정한 앱 대상에 장애를 적용합니다. 서비스 전체 자동 순회는 후속 범위입니다. DB/Redis 장애는 선언한 의존성을 대상으로 별도 실행됩니다.</p></section><section><h2>지원 제한과 결과 읽기</h2><table><tr><th>항목</th><th>현재 지원</th></tr><tr><td>앱 서비스 그룹</td><td>2~5개. 단일 서비스는 version 1 사용</td></tr><tr><td>추가 레포</td><td>1~4개. 제출 레포를 포함하면 최대 5개</td></tr><tr><td>관리형 의존성</td><td>최대 8개. Redis / PostgreSQL / MySQL</td></tr><tr><td>서비스 복제본</td><td>서비스당 1~4개</td></tr><tr><td>업무 probe</td><td>setup/steps 각각 최대 8개 요청</td></tr><tr><td>배포 격리</td><td>요청별 namespace. 현재 단일 Sandbox에서 순차 처리</td></tr></table><p>Kafka 등 다른 종류를 dependencies.type으로 선언하면 설정 오류로 거절됩니다. 앱을 선언 서비스로 구성하는 별도 방식까지 자동 지원한다는 뜻은 아닙니다. 의존성 장애 업무 probe는 현재 Redis 1개와 DB 1개까지 지정할 수 있습니다.</p><h3>결과가 이렇게 나오면</h3><ol><li>PASSED: 이번에 실행한 검사와 판정 기준을 통과했습니다.</li><li>FAILED: 원본의 관측된 복원력이 판정 기준을 충족하지 못했습니다. 수정본 통과 기록과 검증된 패치가 함께 있을 수 있습니다.</li><li>ERROR: 실행 환경·시간 예산·설정 등으로 판정할 근거를 확보하지 못했습니다. 상세 단계와 로그를 확인하세요.</li><li>설정 제한 초과: 서비스 수·추가 레포 수·의존성 종류와 실제 파일 경로를 확인하세요. 현재 화면의 일반 문구만으로 원인을 다 알기 어려워 상세 보고서도 확인해야 합니다.</li></ol><p>복구 시간 0초는 HTTP 표본에서 중단을 포착하지 않았다는 의미입니다. 전체 업무의 무중단 보장을 뜻하지 않습니다. 재검증 통과 시에도 원본 판정은 유지되고 patch_verified와 회차 기록에 수정 결과가 남습니다.</p><p>검증 요청은 하나씩 처리됩니다. 이메일 수신을 선택한 경우 작업 ID와 결과 주소도 함께 보관하세요. 전시 부스에서 해석이 어려운 결과는 운영자에게 문의해 주세요.</p></section><section><h2>양식 다운로드와 복사</h2><p>전체 파일은 01~04 중 하나를 선택하세요. 05는 기존 version 2/3 파일에 합치는 선택 조각입니다. 저장할 최종 파일 이름은 .codereferee/validation.yaml입니다.</p><details><summary>01-auto-override.yaml</summary><a class="download" href="templates/01-auto-override.yaml" download>이 양식 받기</a><button type="button" data-copy="template-0">내용 복사</button><pre id="template-0"># 자동 탐색으로 이미 실행되는 단일 서비스의 복제본/자원만 바꿀 때 사용합니다.
+DB_PASSWORD: &#x27;{{dependency.database.password}}&#x27;</pre>
+      <p>
+        템플릿으로 주소를 넣어도 앱의 프록시나 클라이언트 코드는 그 변수를
+        사용하도록 구현돼 있어야 합니다. gateway로 보낸 업무 요청이 api와
+        DB/Redis를 실제로 통과하는 경로를 선택하세요.
+      </p>
+      <h3>업무·화면 검증 확장</h3>
+      <p>
+        probeSpec은 생성 요청 → 응답 ID 추출 → 조회와 JSON 필드 확인 등을
+        지원합니다. browserProbe는 진입 서비스의 화면에서 이동·입력·클릭·텍스트
+        확인 등을 수행합니다. 05번 파일은 version 2/3 설정에 합치는 선택
+        조각입니다.
+      </p>
+      <p>
+        하나의 요청은 지정한 앱 대상에 장애를 적용합니다. 서비스 전체 자동
+        순회는 후속 범위입니다. DB/Redis 장애는 선언한 의존성을 대상으로 별도
+        실행됩니다.
+      </p>
+    </section>
+    <section>
+      <h2>지원 제한과 결과 읽기</h2>
+      <table>
+        <tr>
+          <th>항목</th>
+          <th>현재 지원</th>
+        </tr>
+        <tr>
+          <td>앱 서비스 그룹</td>
+          <td>2~5개. 단일 서비스는 version 1 사용</td>
+        </tr>
+        <tr>
+          <td>추가 레포</td>
+          <td>1~4개. 제출 레포를 포함하면 최대 5개</td>
+        </tr>
+        <tr>
+          <td>관리형 의존성</td>
+          <td>최대 8개. Redis / PostgreSQL / MySQL</td>
+        </tr>
+        <tr>
+          <td>서비스 복제본</td>
+          <td>서비스당 1~4개</td>
+        </tr>
+        <tr>
+          <td>업무 probe</td>
+          <td>setup/steps 각각 최대 8개 요청</td>
+        </tr>
+        <tr>
+          <td>배포 격리</td>
+          <td>요청별 namespace. 현재 단일 Sandbox에서 순차 처리</td>
+        </tr>
+      </table>
+      <p>
+        Kafka 등 다른 종류를 dependencies.type으로 선언하면 설정 오류로
+        거절됩니다. 앱을 선언 서비스로 구성하는 별도 방식까지 자동 지원한다는
+        뜻은 아닙니다. 의존성 장애 업무 probe는 현재 Redis 1개와 DB 1개까지
+        지정할 수 있습니다.
+      </p>
+      <h3>결과가 이렇게 나오면</h3>
+      <ol>
+        <li>PASSED: 이번에 실행한 검사와 판정 기준을 통과했습니다.</li>
+        <li>
+          FAILED: 원본의 관측된 복원력이 판정 기준을 충족하지 못했습니다. 수정본
+          통과 기록과 검증된 패치가 함께 있을 수 있습니다.
+        </li>
+        <li>
+          ERROR: 실행 환경·시간 예산·설정 등으로 판정할 근거를 확보하지
+          못했습니다. 상세 단계와 로그를 확인하세요.
+        </li>
+        <li>
+          설정 제한 초과: 서비스 수·추가 레포 수·의존성 종류와 실제 파일 경로를
+          확인하세요. 현재 화면의 일반 문구만으로 원인을 다 알기 어려워 상세
+          보고서도 확인해야 합니다.
+        </li>
+      </ol>
+      <p>
+        복구 시간 0초는 HTTP 표본에서 중단을 포착하지 않았다는 의미입니다. 전체
+        업무의 무중단 보장을 뜻하지 않습니다. 재검증 통과 시에도 원본 판정은
+        유지되고 patch_verified와 회차 기록에 수정 결과가 남습니다.
+      </p>
+      <p>
+        검증 요청은 하나씩 처리됩니다. 이메일 수신을 선택한 경우 작업 ID와 결과
+        주소도 함께 보관하세요. 전시 부스에서 해석이 어려운 결과는 운영자에게
+        문의해 주세요.
+      </p>
+    </section>
+    <section>
+      <h2>양식 다운로드와 복사</h2>
+      <p>
+        전체 파일은 01~04 중 하나를 선택하세요. 05는 기존 version 2/3 파일에
+        합치는 선택 조각입니다. 저장할 최종 파일 이름은
+        .codereferee/validation.yaml입니다.
+      </p>
+      <details>
+        <summary>01-auto-override.yaml</summary>
+        <a class="download" href="templates/01-auto-override.yaml" download
+          >이 양식 받기</a
+        ><button type="button" data-copy="template-0">내용 복사</button>
+        <pre id="template-0">
+# 자동 탐색으로 이미 실행되는 단일 서비스의 복제본/자원만 바꿀 때 사용합니다.
 # 이 양식은 실행 명령이나 포트를 새로 지정하지 않습니다.
 # 저장 위치: 선택한 레포/브랜치의 .codereferee/validation.yaml
 version: 1
@@ -17,7 +592,15 @@ service:
   resources:
     cpu: 1000m
     memory: 512Mi
-</pre></details><details><summary>02-single-service.yaml</summary><a class="download" href="templates/02-single-service.yaml" download>이 양식 받기</a><button type="button" data-copy="template-1">내용 복사</button><pre id="template-1"># 단일 HTTP 서비스. Dockerfile/포트/환경변수는 내 프로젝트에 맞게 수정합니다.
+</pre>
+      </details>
+      <details>
+        <summary>02-single-service.yaml</summary>
+        <a class="download" href="templates/02-single-service.yaml" download
+          >이 양식 받기</a
+        ><button type="button" data-copy="template-1">내용 복사</button>
+        <pre id="template-1">
+# 단일 HTTP 서비스. Dockerfile/포트/환경변수는 내 프로젝트에 맞게 수정합니다.
 # Dockerfile 경로는 레포 루트 기준입니다. 해당 파일이 실제로 존재해야 합니다.
 # 저장 위치: .codereferee/validation.yaml
 version: 1
@@ -34,7 +617,15 @@ service:
 #   stack: python  # python, node, gradle, maven 중 선택
 #   workingDirectory: .
 #   test: [python, -m, pytest]
-</pre></details><details><summary>03-multi-service.yaml</summary><a class="download" href="templates/03-multi-service.yaml" download>이 양식 받기</a><button type="button" data-copy="template-2">내용 복사</button><pre id="template-2"># 한 레포의 gateway/ 와 api/ 를 각각 배포하는 예시입니다.
+</pre>
+      </details>
+      <details>
+        <summary>03-multi-service.yaml</summary>
+        <a class="download" href="templates/03-multi-service.yaml" download
+          >이 양식 받기</a
+        ><button type="button" data-copy="template-2">내용 복사</button>
+        <pre id="template-2">
+# 한 레포의 gateway/ 와 api/ 를 각각 배포하는 예시입니다.
 # 두 디렉토리와 Dockerfile을 실제 경로로 바꾸세요.
 # API_URL/REDIS_HOST/REDIS_PORT는 앱이 실제로 읽는 환경변수 이름으로 바꾸세요.
 # gateway 앱이 API_URL을 사용해 /api/ 요청을 api로 전달하도록 구현돼 있어야 합니다.
@@ -65,7 +656,15 @@ targetService: api
 # 이 경로는 gateway에서 접근 가능하고, 실제 Redis 업무를 수행해야 합니다.
 probePath: /api/items/1
 # Redis가 필요 없는 앱이면 dependencies와 관련 env를 함께 제거하세요.
-</pre></details><details><summary>04-multi-repository.yaml</summary><a class="download" href="templates/04-multi-repository.yaml" download>이 양식 받기</a><button type="button" data-copy="template-3">내용 복사</button><pre id="template-3"># 제출한 레포(main)는 gateway를, 추가 레포(backend)는 api를 제공합니다.
+</pre>
+      </details>
+      <details>
+        <summary>04-multi-repository.yaml</summary>
+        <a class="download" href="templates/04-multi-repository.yaml" download
+          >이 양식 받기</a
+        ><button type="button" data-copy="template-3">내용 복사</button>
+        <pre id="template-3">
+# 제출한 레포(main)는 gateway를, 추가 레포(backend)는 api를 제공합니다.
 # URL은 자리표시자입니다. 공개 HTTPS GitHub 레포 주소로 반드시 바꾸세요.
 version: 3
 repositories:
@@ -94,7 +693,18 @@ entryService: gateway
 targetService: api
 # gateway가 실제로 제공하는 업무 경로로 수정하세요.
 probePath: /api/items/1
-</pre></details><details><summary>05-business-browser-fragment.yaml</summary><a class="download" href="templates/05-business-browser-fragment.yaml" download>이 양식 받기</a><button type="button" data-copy="template-4">내용 복사</button><pre id="template-4"># 독립 실행용 파일이 아닙니다. version 2 또는 3 설정의 최상위에 합치세요.
+</pre>
+      </details>
+      <details>
+        <summary>05-business-browser-fragment.yaml</summary>
+        <a
+          class="download"
+          href="templates/05-business-browser-fragment.yaml"
+          download
+          >이 양식 받기</a
+        ><button type="button" data-copy="template-4">내용 복사</button>
+        <pre id="template-4">
+# 독립 실행용 파일이 아닙니다. version 2 또는 3 설정의 최상위에 합치세요.
 # API 경로/요청 본문/응답 필드/화면 선택자를 실제 앱에 맞게 바꿉니다.
 probePath: /api/items
 probeSpec:
@@ -115,4 +725,24 @@ probeSpec:
 #     - {action: fill, selector: &#x27;#item&#x27;, value: &#x27;ui-${runId}&#x27;}
 #     - {action: click, selector: &#x27;#save&#x27;}
 #     - {action: assertText, selector: &#x27;#items&#x27;, text: &#x27;ui-&#x27;}
-</pre></details><p id="copy-status" role="status"></p></section></main><script>document.querySelectorAll('[data-copy]').forEach(button=>button.addEventListener('click',async()=>{const text=document.getElementById(button.dataset.copy).textContent;try{await navigator.clipboard.writeText(text);document.getElementById('copy-status').textContent='복사했습니다. 내 프로젝트에 맞게 수정한 뒤 저장하세요.';}catch{document.getElementById('copy-status').textContent='브라우저 복사가 허용되지 않았습니다. 양식을 다운로드하거나 코드를 선택해 복사하세요.';}}));</script></html>
+</pre>
+      </details>
+      <p id="copy-status" role="status"></p>
+    </section>
+  </main>
+  <script>
+    document.querySelectorAll("[data-copy]").forEach((button) =>
+      button.addEventListener("click", async () => {
+        const text = document.getElementById(button.dataset.copy).textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          document.getElementById("copy-status").textContent =
+            "복사했습니다. 내 프로젝트에 맞게 수정한 뒤 저장하세요.";
+        } catch {
+          document.getElementById("copy-status").textContent =
+            "브라우저 복사가 허용되지 않았습니다. 양식을 다운로드하거나 코드를 선택해 복사하세요.";
+        }
+      }),
+    );
+  </script>
+</html>
